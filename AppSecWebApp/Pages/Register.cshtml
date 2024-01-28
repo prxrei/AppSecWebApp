@@ -1,0 +1,158 @@
+﻿@page
+@model AppSecWebApp.Pages.RegisterModel
+@{
+}
+
+<div class="container mt-5">
+
+	<div class="row justify-content-center align-items-center">
+
+		<div class="col-sm-12 col-md-12 col-lg-4">
+			<h1 class="mb-3">Register </h1>
+
+			<form method="post" enctype="multipart/form-data">
+				<div asp-validation-summary="All" class="text-danger"></div>
+
+				<div class="mb-3">
+					<label class="form-label" asp-for="RModel.FullName">Full Name</label>
+					<input type="text" asp-for="RModel.FullName" class="form-control" />
+					<span asp-validation-for="RModel.FullName" class="text-danger"></span>
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label" asp-for="RModel.CreditCardNumber">Credit Card No</label>
+					<input type="text" asp-for="RModel.CreditCardNumber" class="form-control" />
+					<span asp-validation-for="RModel.CreditCardNumber" class="text-danger"></span>
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label" asp-for="RModel.Gender">Gender</label>
+					<select asp-for="RModel.Gender" class="form-control">
+						<option value="Male">Male</option>
+						<option value="Female">Female</option>
+						<option value="Prefer Not to Say">Prefer Not to Say</option>
+					</select>
+					<span asp-validation-for="RModel.Gender" class="text-danger"></span>
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label" asp-for="RModel.MobileNumber">Mobile No</label>
+					<input type="text" asp-for="RModel.MobileNumber" class="form-control" />
+					<span asp-validation-for="RModel.MobileNumber" class="text-danger"></span>
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label" asp-for="RModel.DeliveryAddress">Delivery Address</label>
+					<textarea asp-for="RModel.DeliveryAddress" class="form-control"></textarea>
+					<span asp-validation-for="RModel.DeliveryAddress" class="text-danger"></span>
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label" asp-for="RModel.Email">Email Address</label>
+					<input type="text" asp-for="RModel.Email" class="form-control" />
+					<span asp-validation-for="RModel.Email" class="text-danger"></span>
+				</div>
+
+				<div id="passwordCheck" class="mb-3">
+					<p id="passwordCheckNote" class="hidden">Password Criteria:</p>
+					<p id="lengthCheck" class="hidden">At least 12 Characters</p>
+					<p id="uppercaseCheck" class="hidden">At least ONE UPPERCASE letter</p>
+					<p id="lowercaseCheck" class="hidden">At least ONE lowercase letter</p>
+					<p id="digitCheck" class="hidden">At least ONE digit</p>
+					<p id="specialCharCheck" class="hidden">At least ONE Special Character (eg: #$%^&*)</p>
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label" asp-for="RModel.Password">Password</label>
+					<input type="password" onkeyup="checkClient()" asp-for="RModel.Password" class="form-control" />
+					<span asp-validation-for="RModel.Password" class="text-danger"></span>
+				</div>
+				<p id="pwdlbl"></p>
+
+				<div class="mb-3">
+					<label class="form-label" asp-for="RModel.ConfirmPassword">Confirm Password</label>
+					<input type="password" onkeyup="checkPwdMatch()" asp-for="RModel.ConfirmPassword" class="form-control" />
+					<span asp-validation-for="RModel.ConfirmPassword" class="text-danger"></span>
+				</div>
+				<p id="cfmpwdlbl"></p>
+
+				<div class="mb-3">
+					<label class="form-label" asp-for="RModel.Photo">Photo (Only .jpg files)</label>
+					<input type="file" asp-for="RModel.Photo" accept=".jpg" class="form-control" />
+					<span asp-validation-for="RModel.Photo" class="text-danger"></span>
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label" asp-for="RModel.AboutMe">About Me</label>
+					<textarea asp-for="RModel.AboutMe" class="form-control"></textarea>
+					<span asp-validation-for="RModel.AboutMe" class="text-danger"></span>
+				</div>
+
+				<div class="mb-3">
+					<button type="submit" class="btn btn-primary">Register</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+
+<script type="text/javascript">
+	function checkClient() {
+		var password = document.getElementById('RModel_Password').value;
+		var confirmPassword = document.getElementById('RModel_ConfirmPassword').value;
+
+		if (password.length < 12) {
+			document.getElementById("pwdlbl").innerHTML = "Password needs to be at least 12 Characters";
+			document.getElementById("pwdlbl").style.color = "Red";
+		}
+
+		else if (!/[A-Z]/.test(password)) {
+			document.getElementById("pwdlbl").innerHTML = "Password needs to have at least ONE Uppercase Letter";
+			document.getElementById("pwdlbl").style.color = "Red";
+		}
+
+		else if (!/[a-z]/.test(password)) {
+			document.getElementById("pwdlbl").innerHTML = "Password needs to have at least ONE Lowercase Letter";
+			document.getElementById("pwdlbl").style.color = "Red";
+		}
+
+		else if (!/\d/.test(password)) {
+			document.getElementById("pwdlbl").innerHTML = "Password needs to have at least ONE Digit";
+			document.getElementById("pwdlbl").style.color = "Red";
+		}
+
+		else if (!/[^a-zA-Z0-9]/.test(password)) {
+			document.getElementById("pwdlbl").innerHTML = "Password needs to have at least ONE Special Character";
+			document.getElementById("pwdlbl").style.color = "Red";
+		}
+		else {
+			document.getElementById("pwdlbl").innerHTML = "";
+		}
+	}
+</script>
+
+<script type="text/javascript">
+	function checkPwdMatch() {
+		var password = document.getElementById('RModel_Password').value;
+		var confirmPassword = document.getElementById('RModel_ConfirmPassword').value;
+
+		if (confirmPassword != password) {
+			document.getElementById("cfmpwdlbl").innerHTML = "Passwords does not match";
+			document.getElementById("cfmpwdlbl").style.color = "Red";
+		}
+
+		else {
+			document.getElementById("cfmpwdlbl").innerHTML = "";
+		}
+
+	}
+
+
+
+
+
+</script>	
+
+
+
