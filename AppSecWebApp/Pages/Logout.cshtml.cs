@@ -15,9 +15,11 @@ namespace AppSecWebApp.Pages
 		public void OnGet() { }
 		public async Task<IActionResult> OnPostLogoutAsync()
 		{
-			await signInManager.SignOutAsync();
-			return RedirectToPage("Login");
-		}
+            HttpContext.Session.Remove("UserId");
+            HttpContext.Session.Remove("UserName");
+            await signInManager.SignOutAsync();
+            return RedirectToPage("Login");
+        }
 		public async Task<IActionResult> OnPostDontLogoutAsync()
 		{
 			return RedirectToPage("Index");

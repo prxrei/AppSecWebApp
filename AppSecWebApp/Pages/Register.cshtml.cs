@@ -14,15 +14,17 @@ namespace AppSecWebApp.Pages
 		private readonly UserManager<ApplicationUser> userManager;
 		private readonly SignInManager<ApplicationUser> signInManager;
 		private readonly IWebHostEnvironment _environment;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-		[BindProperty]
+        [BindProperty]
 		public Register RModel { get; set; }
 
-		public RegisterModel(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IWebHostEnvironment environment)
+		public RegisterModel(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IWebHostEnvironment environment, IHttpContextAccessor httpContextAccessor)
 		{
 			this.userManager = userManager;
 			this.signInManager = signInManager;
 			_environment = environment;
+			_httpContextAccessor = httpContextAccessor;
 		}
 
 		public void OnGet()
@@ -34,7 +36,7 @@ namespace AppSecWebApp.Pages
 			if (ModelState.IsValid)
 			{
 				var dataProtectionProvider = DataProtectionProvider.Create("Encrypt");
-				var protector = dataProtectionProvider.CreateProtector("Key");
+				var protecting = dataProtectionProvider.CreateProtector("Key");
 
 
 				var emailexist = await userManager.FindByEmailAsync(RModel.Email);
@@ -49,12 +51,12 @@ namespace AppSecWebApp.Pages
 				{
 					UserName = RModel.Email,
 					Email = RModel.Email,
-					FullName = protector.Protect(RModel.FullName),
-					CreditCardNumber = protector.Protect(RModel.CreditCardNumber),
-					Gender = protector.Protect(RModel.Gender),
-					MobileNumber = protector.Protect(RModel.MobileNumber),
-					DeliveryAddress = protector.Protect(RModel.DeliveryAddress),
-					AboutMe = protector.Protect(RModel.AboutMe),
+					FullName = protecting.Protect(RModel.FullName),
+					CreditCardNumber = protecting.Protect(RModel.CreditCardNumber),
+					Gender = protecting.Protect(RModel.Gender),
+					MobileNumber = protecting.Protect(RModel.MobileNumber),
+					DeliveryAddress = protecting.Protect(RModel.DeliveryAddress),
+					AboutMe = protecting.Protect(RModel.AboutMe),
 				};
 
 				if (RModel.Photo != null)
@@ -64,7 +66,7 @@ namespace AppSecWebApp.Pages
 					var imagePath = Path.Combine(_environment.ContentRootPath, @"wwwroot/Profile", filename);
 					using var fileStream = new FileStream(imagePath, FileMode.Create);
 					RModel.Photo.CopyTo(fileStream);
-					user.PhotoPath = protector.Protect($"/Profile/{filename}");
+					user.PhotoPath = protecting.Protect($"/Profile/{filename}");
 				}
 
 
@@ -72,9 +74,11 @@ namespace AppSecWebApp.Pages
 
 				if (result.Succeeded)
 				{
-					await signInManager.SignInAsync(user, false);
-					return RedirectToPage("Index");
-				}
+                    await signInManager.SignInAsync(user, false);
+                    _httpContextAccessor.HttpContext.Session.SetString("UserId", user.Id);
+                    _httpContextAccessor.HttpContext.Session.SetString("UserName", user.UserName);
+                    return RedirectToPage("Login");
+                }
 
 				foreach (var error in result.Errors)
 				{

@@ -5,8 +5,7 @@ using AppSecWebApp.Model;
 using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection;
-using System.Security.Cryptography;
-using System.Net;
+using Microsoft.AspNetCore.Http;
 
 namespace AppSecWebApp.Pages
 {
@@ -15,11 +14,13 @@ namespace AppSecWebApp.Pages
     {
         private readonly ILogger<IndexModel> _logger;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public IndexModel(ILogger<IndexModel> logger, UserManager<ApplicationUser> userManager)
+        public IndexModel(ILogger<IndexModel> logger, UserManager<ApplicationUser> userManager, IHttpContextAccessor httpContextAccessor)
         {
             _logger = logger;
             _userManager = userManager;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public ApplicationUser CurrentUser { get; set; }
@@ -27,20 +28,25 @@ namespace AppSecWebApp.Pages
         public async Task OnGetAsync()
         {
             var dataProtectionProvider = DataProtectionProvider.Create("Encrypt");
-            var _dataProtector = dataProtectionProvider.CreateProtector("Key");
+            var protecting = dataProtectionProvider.CreateProtector("Key");
             CurrentUser = await _userManager.GetUserAsync(User);
 
             if (CurrentUser == null)
             {
-            _logger.LogWarning("User is null in OnGetAsync.");
+                _logger.LogWarning("User is null in OnGetAsync.");
                 return;
             }
 
-            // Log encrypted values (for debugging purposes)
-            _logger.LogInformation($"Encrypted FullName: {_dataProtector.Protect(CurrentUser.FullName)}");
-            CurrentUser.FullName = _dataProtector.Unprotect(CurrentUser.FullName) ?? string.Empty;
-            _logger.LogInformation($"Decrypted FullName: {CurrentUser.FullName}");
+            CurrentUser.FullName = protecting.Unprotect(CurrentUser.FullName) ?? string.Empty;
 
+            // Log the session ID
+            var sessionId = HttpContext.Session.Id;
+            _logger.LogInformation($"Session ID: {sessionId}");
+
+            // Reset the session timeout by updating session variables
+            HttpContext.Session.SetString("UserId", CurrentUser.Id);
+            HttpContext.Session.SetString("UserName", CurrentUser.UserName);
+            HttpContext.Session.SetString("KeepSessionAlive", "true");
         }
     }
 }

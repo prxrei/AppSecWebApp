@@ -8,10 +8,19 @@ builder.Services.AddRazorPages();
 builder.Services.AddDbContext<AuthDbContext>();
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<AuthDbContext>();
 builder.Services.AddDataProtection();
+builder.Services.AddSingleton<ApplicationUser, ApplicationUser>();
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromSeconds(30);
+    options.Cookie.IsEssential = true;
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
 
 builder.Services.ConfigureApplicationCookie(config =>
 {
-    config.LoginPath = "/login";
+    config.LoginPath = "/Login";
 });
 
 builder.Services.AddAuthentication("Cookie").AddCookie("Cookie", options
@@ -36,6 +45,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseSession();
 
 app.UseAuthentication();
 
