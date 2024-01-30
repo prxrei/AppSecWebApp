@@ -57,6 +57,7 @@ namespace AppSecWebApp.Pages
 					MobileNumber = protecting.Protect(RModel.MobileNumber),
 					DeliveryAddress = protecting.Protect(RModel.DeliveryAddress),
 					AboutMe = protecting.Protect(RModel.AboutMe),
+					UniqueIdentifier = ""
 				};
 
 				if (RModel.Photo != null)

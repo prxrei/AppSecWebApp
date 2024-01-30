@@ -54,17 +54,18 @@
 				</div>
 
 				<div id="passwordCheck" class="mb-3">
-					<p id="passwordCheckNote" class="hidden">Password Criteria:</p>
-					<p id="lengthCheck" class="hidden">At least 12 Characters</p>
-					<p id="uppercaseCheck" class="hidden">At least ONE UPPERCASE letter</p>
-					<p id="lowercaseCheck" class="hidden">At least ONE lowercase letter</p>
-					<p id="digitCheck" class="hidden">At least ONE digit</p>
-					<p id="specialCharCheck" class="hidden">At least ONE Special Character (eg: #$%^&*)</p>
+					<p id="passwordCheckNote" class="hidden text-danger font-weight-bold font-italic">Password Criteria:</p>
+					<p id="lengthCheck" class="hidden text-danger">At least 12 Characters</p>
+					<p id="uppercaseCheck" class="hidden text-danger">At least ONE UPPERCASE letter</p>
+					<p id="lowercaseCheck" class="hidden text-danger">At least ONE lowercase letter</p>
+					<p id="digitCheck" class="hidden text-danger">At least ONE digit</p>
+					<p id="specialCharCheck" class="hidden text-danger">At least ONE Special Character (eg: #$%^&*)</p>
 				</div>
+
 
 				<div class="mb-3">
 					<label class="form-label" asp-for="RModel.Password">Password</label>
-					<input type="password" onkeyup="checkClient()" asp-for="RModel.Password" class="form-control" />
+					<input type="password" onkeyup="checkpasswordclient()" asp-for="RModel.Password" class="form-control" />
 					<span asp-validation-for="RModel.Password" class="text-danger"></span>
 				</div>
 				<p id="pwdlbl"></p>
@@ -98,7 +99,7 @@
 
 
 <script type="text/javascript">
-	function checkClient() {
+	function checkpasswordclient() {
 		var password = document.getElementById('RModel_Password').value;
 		var confirmPassword = document.getElementById('RModel_ConfirmPassword').value;
 

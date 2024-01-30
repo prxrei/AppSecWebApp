@@ -5,6 +5,40 @@
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome, @Model.CurrentUser.FullName!</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <h1 class="display-4" style="font-weight: bold; font-style: italic; color: blue;">Welcome, @Model.CurrentUser.FullName!</h1>
+
+    <img src="@Model.DisplayImage()" alt="Profile Photo" class="img-fluid" width="600" height="400" />
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-around;">
+        <div style="width: 40%; margin-bottom: 10px;">
+            <label for="creditCard" style="font-weight: bold; font-style: italic; color: blue;">Credit Card Number:</label>
+            <input type="text" id="creditCard" value="@Model.CurrentUser.CreditCardNumber" readonly class="form-control" />
+        </div>
+
+        <div style="width: 40%; margin-bottom: 10px;">
+            <label for="gender" style="font-weight: bold; font-style: italic; color: blue;">Gender:</label>
+            <input type="text" id="gender" value="@Model.CurrentUser.Gender" readonly class="form-control" />
+        </div>
+
+        <div style="width: 40%; margin-bottom: 10px;">
+            <label for="email" style="font-weight: bold; font-style: italic; color: blue;">Email:</label>
+            <input type="text" id="email" value="@Model.CurrentUser.Email" readonly class="form-control" />
+        </div>
+
+        <div style="width: 40%; margin-bottom: 10px;">
+            <label for="mobileNumber" style="font-weight: bold; font-style: italic; color: blue;">Mobile Number:</label>
+            <input type="text" id="mobileNumber" value="@Model.CurrentUser.MobileNumber" readonly class="form-control" />
+        </div>
+
+        <div style="width: 40%; margin-bottom: 10px;">
+            <label for="deliveryAddress" style="font-weight: bold; font-style: italic; color: blue;">Delivery Address:</label>
+            <input type="text" id="deliveryAddress" value="@Model.CurrentUser.DeliveryAddress" readonly class="form-control" />
+        </div>
+
+        <div style="width: 40%; margin-bottom: 10px;">
+            <label for="aboutMe" style="font-weight: bold; font-style: italic; color: blue;">About Me:</label>
+            <textarea id="aboutMe" readonly class="form-control">@Model.CurrentUser.AboutMe</textarea>
+        </div>
+    </div>
 </div>
+
+

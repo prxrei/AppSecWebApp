@@ -9,44 +9,102 @@ using Microsoft.AspNetCore.Http;
 
 namespace AppSecWebApp.Pages
 {
-    [Authorize]
-    public class IndexModel : PageModel
-    {
-        private readonly ILogger<IndexModel> _logger;
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+	[Authorize]
+	public class IndexModel : PageModel
+	{
+		private readonly ILogger<IndexModel> _logger;
+		private readonly SignInManager<ApplicationUser> signInManager;
+		private readonly UserManager<ApplicationUser> _userManager;
+		private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public IndexModel(ILogger<IndexModel> logger, UserManager<ApplicationUser> userManager, IHttpContextAccessor httpContextAccessor)
-        {
-            _logger = logger;
-            _userManager = userManager;
-            _httpContextAccessor = httpContextAccessor;
-        }
+		public IndexModel(ILogger<IndexModel> logger, SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager, IHttpContextAccessor httpContextAccessor)
+		{
+			_logger = logger;
+			_userManager = userManager;
+			this.signInManager = signInManager;
+			_httpContextAccessor = httpContextAccessor;
+		}
 
-        public ApplicationUser CurrentUser { get; set; }
+		public ApplicationUser CurrentUser { get; set; }
 
-        public async Task OnGetAsync()
-        {
-            var dataProtectionProvider = DataProtectionProvider.Create("Encrypt");
-            var protecting = dataProtectionProvider.CreateProtector("Key");
-            CurrentUser = await _userManager.GetUserAsync(User);
+		public async Task OnGetAsync()
+		{
+			var dataProtectionProvider = DataProtectionProvider.Create("Encrypt");
+			var protecting = dataProtectionProvider.CreateProtector("Key");
+			CurrentUser = await _userManager.GetUserAsync(User);
+			var httpContext = _httpContextAccessor.HttpContext;
 
-            if (CurrentUser == null)
-            {
-                _logger.LogWarning("User is null in OnGetAsync.");
-                return;
-            }
+			if (!User.Identity.IsAuthenticated)
+			{
+				Response.Redirect("/Login");
+				await signInManager.SignOutAsync();
+				return;
+			}
 
-            CurrentUser.FullName = protecting.Unprotect(CurrentUser.FullName) ?? string.Empty;
+			// Check for session variables
+			if (httpContext.Session.GetString("UserId") == null ||
+				httpContext.Session.GetString("UserName") == null ||
+				httpContext.Session.GetString("KeepSessionAlive") == null)
+			{
+				Response.Redirect("/Login"); // Redirect to the login page if session variables are not set
+				await signInManager.SignOutAsync();
+				return;
+			}
 
-            // Log the session ID
-            var sessionId = HttpContext.Session.Id;
-            _logger.LogInformation($"Session ID: {sessionId}");
+			// Check for AuthToken in session and cookie
+			var sessionAuthToken = httpContext.Session.GetString("AuthToken");
+			var cookieAuthToken = httpContext.Request.Cookies["AuthToken"];
 
-            // Reset the session timeout by updating session variables
-            HttpContext.Session.SetString("UserId", CurrentUser.Id);
-            HttpContext.Session.SetString("UserName", CurrentUser.UserName);
-            HttpContext.Session.SetString("KeepSessionAlive", "true");
-        }
-    }
+			if (sessionAuthToken == null || cookieAuthToken == null || sessionAuthToken != cookieAuthToken)
+			{
+				Response.Redirect("/Login");
+				await signInManager.SignOutAsync();
+				// Redirect to the login page if AuthToken does not match
+				return;
+			}
+
+			// Check if the stored session identifier in the user's session matches the one in the secure cookie
+			string storedSessionIdentifier = httpContext.Session.GetString("SessionIdentifier");
+			string cookieSessionIdentifier = httpContext.Request.Cookies["SessionIdentifierCookie"];
+
+			if (storedSessionIdentifier != cookieSessionIdentifier)
+			{
+				Response.Redirect("/Login");
+				await signInManager.SignOutAsync();
+				return;
+			}
+
+			CurrentUser.FullName = protecting.Unprotect(CurrentUser?.FullName) ?? string.Empty;
+			CurrentUser.CreditCardNumber = protecting.Unprotect(CurrentUser?.CreditCardNumber) ?? string.Empty;
+			CurrentUser.Gender = protecting.Unprotect(CurrentUser?.Gender) ?? string.Empty;
+			CurrentUser.MobileNumber = protecting.Unprotect(CurrentUser?.MobileNumber) ?? string.Empty;
+			CurrentUser.DeliveryAddress = protecting.Unprotect(CurrentUser?.DeliveryAddress) ?? string.Empty;
+			CurrentUser.AboutMe = protecting.Unprotect(CurrentUser?.AboutMe) ?? string.Empty;
+			CurrentUser.PhotoPath = protecting.Unprotect(CurrentUser.PhotoPath) ?? string.Empty;
+
+			// Log the session ID
+			var sessionId = httpContext.Session.Id;
+			_logger.LogInformation($"Session ID: {sessionId}");
+
+			// Reset the session timeout by updating session variables
+			httpContext.Session.GetString("UserId");
+			httpContext.Session.GetString("UserName");
+			httpContext.Session.GetString("KeepSessionAlive");
+
+			// Access the UniqueIdentifier property
+			string uniqueIdentifier = CurrentUser?.UniqueIdentifier ?? string.Empty;
+			_logger.LogInformation($"UniqueIdentifier: {uniqueIdentifier}");
+		}
+
+		public string DisplayImage()
+		{
+			if (CurrentUser != null && !string.IsNullOrEmpty(CurrentUser.PhotoPath))
+			{
+				return CurrentUser.PhotoPath;
+			}
+
+			// Default profile image path if the user doesn't have a photo
+			return "/images/default-profile.jpg";
+		}
+	}
 }

@@ -11,5 +11,8 @@ namespace AppSecWebApp.Model
 		public string DeliveryAddress { get; set; }
 		public string? PhotoPath { get; set; }
 		public string? AboutMe { get; set; }
+
+		// Add the UniqueIdentifier property
+		public string UniqueIdentifier { get; set; }
 	}
 }
