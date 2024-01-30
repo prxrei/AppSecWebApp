@@ -33,11 +33,13 @@ namespace AppSecWebApp.Pages
 			var protecting = dataProtectionProvider.CreateProtector("Key");
 			CurrentUser = await _userManager.GetUserAsync(User);
 			var httpContext = _httpContextAccessor.HttpContext;
+			
 
 			if (!User.Identity.IsAuthenticated)
 			{
 				Response.Redirect("/Login");
 				await signInManager.SignOutAsync();
+				CurrentUser.UniqueIdentifier = "";
 				return;
 			}
 
@@ -48,6 +50,7 @@ namespace AppSecWebApp.Pages
 			{
 				Response.Redirect("/Login"); // Redirect to the login page if session variables are not set
 				await signInManager.SignOutAsync();
+				CurrentUser.UniqueIdentifier = "";
 				return;
 			}
 
@@ -59,7 +62,7 @@ namespace AppSecWebApp.Pages
 			{
 				Response.Redirect("/Login");
 				await signInManager.SignOutAsync();
-				// Redirect to the login page if AuthToken does not match
+				CurrentUser.UniqueIdentifier = "";
 				return;
 			}
 
@@ -71,6 +74,7 @@ namespace AppSecWebApp.Pages
 			{
 				Response.Redirect("/Login");
 				await signInManager.SignOutAsync();
+				CurrentUser.UniqueIdentifier = "";
 				return;
 			}
 
