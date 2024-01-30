@@ -1,0 +1,13 @@
+﻿@page
+@model AppSecWebApp.Pages.LockedOut_Model
+@{
+}
+<div class="container mt-5">
+    <div class="row justify-content-center align-items-center">
+        <div class="col-sm-12 col-md-12 col-lg-4">
+            <h1 class="mb-3">Account Locked</h1>
+            <p>Your account has been locked due to multiple failed login attempts. Please try again later.</p>
+            <p>You can try again after @Model.LockoutEnd.LocalDateTime.</p>
+        </div>
+    </div>
+</div>

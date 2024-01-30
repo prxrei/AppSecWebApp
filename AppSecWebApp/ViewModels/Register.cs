@@ -5,25 +5,30 @@ namespace AppSecWebApp.ViewModels
 {
     public class Register
     {
-		[Required(ErrorMessage = "Full Name Required")]
-		public string FullName { get; set; }
+		[Required]
+        [RegularExpression(@"^[A-Za-z\s]+$", ErrorMessage = "Full Name does not meet the website's requirements")]
+        public string FullName { get; set; }
 
-		[Required(ErrorMessage = "Credit Card Number Required")]
-		[DataType(DataType.CreditCard)]
+		[Required]
+        [RegularExpression(@"\b(?:\d[-]*?){15,16}\b", ErrorMessage = "Please enter a VALID Credit Card Number")]
+        [DataType(DataType.CreditCard)]
 		public string CreditCardNumber { get; set; }
 
-		[Required(ErrorMessage = "Gender Required")]
+		[Required]
 		public string Gender { get; set; }
 
-		[Required(ErrorMessage = "Mobile Number Required")]
-		[DataType(DataType.PhoneNumber)]
+		[Required]
+        [RegularExpression(@"^\d+$", ErrorMessage = "Please enter a VALID Mobile Number.")]
+        [DataType(DataType.PhoneNumber)]
 		public string MobileNumber { get; set; }
 
-		[Required(ErrorMessage = "Delivery Address Required")]
-		public string DeliveryAddress { get; set; }
+		[Required]
+        [RegularExpression(@"^[A-Za-z0-9\s#-]*$", ErrorMessage = "Please enter a VALID delivery address.")]
+        public string DeliveryAddress { get; set; }
 
 		[Required]
         [DataType(DataType.EmailAddress)]
+        [RegularExpression(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", ErrorMessage = "Please enter a VALID email address.")]
         public string Email { get; set; }
 
 		[Required]
@@ -41,7 +46,7 @@ namespace AppSecWebApp.ViewModels
 		public IFormFile? Photo { get; set; }
 
 		[Required]
-		public string? AboutMe { get; set; }
+		public string AboutMe { get; set; }
 
 
 

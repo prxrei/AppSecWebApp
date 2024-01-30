@@ -1,7 +1,9 @@
 using AppSecWebApp.Model;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Http;
 
 namespace AppSecWebApp.Pages
 {
@@ -16,7 +18,9 @@ namespace AppSecWebApp.Pages
             this.userManager = userManager;
         }
 
-        public void OnGet() { }
+        public void OnGet() 
+        { 
+        }
 
         public async Task<IActionResult> OnPostLogoutAsync()
         {
@@ -34,7 +38,7 @@ namespace AppSecWebApp.Pages
                 var user = await userManager.FindByIdAsync(userId);
                 if (user != null)
                 {
-                    user.UniqueIdentifier = ""; // Replace UniqueIdentifier with the actual property in your ApplicationUser class
+                    user.UniqueIdentifier = "";
                     await userManager.UpdateAsync(user);
                 }
             }

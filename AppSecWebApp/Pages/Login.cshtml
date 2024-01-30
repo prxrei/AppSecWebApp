@@ -28,10 +28,10 @@
                     <label class="form-check-label" asp-for="LModel.RememberMe">Remember Me?</label>
                 </div>
 
-                @if (!string.IsNullOrEmpty(Model.LoginErrorMessage))
+                @if (!string.IsNullOrEmpty(ViewData["ErrorMessage"] as string))
                 {
-                    <div class="alert alert-danger" role="alert">
-                        @Model.LoginErrorMessage
+                    <div class="alert alert-danger">
+                        @ViewData["ErrorMessage"]
                     </div>
                 }
 

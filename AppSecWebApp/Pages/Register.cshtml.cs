@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using AppSecWebApp.ViewModels;
 using NanoidDotNet;
+using System.Text.Encodings.Web;
 
 
 namespace AppSecWebApp.Pages
@@ -31,6 +32,7 @@ namespace AppSecWebApp.Pages
 		{
 		}
 
+		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> OnPostAsync()
 		{
 			if (ModelState.IsValid)
@@ -51,14 +53,15 @@ namespace AppSecWebApp.Pages
 				{
 					UserName = RModel.Email,
 					Email = RModel.Email,
-					FullName = protecting.Protect(RModel.FullName),
-					CreditCardNumber = protecting.Protect(RModel.CreditCardNumber),
-					Gender = protecting.Protect(RModel.Gender),
-					MobileNumber = protecting.Protect(RModel.MobileNumber),
-					DeliveryAddress = protecting.Protect(RModel.DeliveryAddress),
-					AboutMe = protecting.Protect(RModel.AboutMe),
+					FullName = HtmlEncoder.Default.Encode(protecting.Protect(RModel.FullName)),
+					CreditCardNumber = HtmlEncoder.Default.Encode(protecting.Protect(RModel.CreditCardNumber)),
+					Gender = HtmlEncoder.Default.Encode(protecting.Protect(RModel.Gender)),
+					MobileNumber = HtmlEncoder.Default.Encode(protecting.Protect(RModel.MobileNumber)),
+					DeliveryAddress = HtmlEncoder.Default.Encode(protecting.Protect(RModel.DeliveryAddress)),
+					AboutMe = HtmlEncoder.Default.Encode(protecting.Protect(RModel.AboutMe)),
 					UniqueIdentifier = ""
 				};
+
 
 				if (RModel.Photo != null)
 				{

@@ -11,19 +11,22 @@
 			<h1 class="mb-3">Register </h1>
 
 			<form method="post" enctype="multipart/form-data">
+				@Html.AntiForgeryToken()
 				<div asp-validation-summary="All" class="text-danger"></div>
 
 				<div class="mb-3">
 					<label class="form-label" asp-for="RModel.FullName">Full Name</label>
-					<input type="text" asp-for="RModel.FullName" class="form-control" />
+					<input type="text" onblur="validateFullName()" asp-for=" RModel.FullName" class="form-control" />
 					<span asp-validation-for="RModel.FullName" class="text-danger"></span>
 				</div>
+				<p id="fnamelbl"></p>
 
 				<div class="mb-3">
 					<label class="form-label" asp-for="RModel.CreditCardNumber">Credit Card No</label>
-					<input type="text" asp-for="RModel.CreditCardNumber" class="form-control" />
+					<input type="text" onblur="validateCreditCardNumber()" asp-for="RModel.CreditCardNumber" class="form-control" />
 					<span asp-validation-for="RModel.CreditCardNumber" class="text-danger"></span>
 				</div>
+				<p id="credlbl"></p>
 
 				<div class="mb-3">
 					<label class="form-label" asp-for="RModel.Gender">Gender</label>
@@ -37,21 +40,24 @@
 
 				<div class="mb-3">
 					<label class="form-label" asp-for="RModel.MobileNumber">Mobile No</label>
-					<input type="text" asp-for="RModel.MobileNumber" class="form-control" />
+					<input type="text" onblur="validateMobileNumber()" asp-for="RModel.MobileNumber" class="form-control" />
 					<span asp-validation-for="RModel.MobileNumber" class="text-danger"></span>
 				</div>
+				<p id="mbnlbl"></p>
 
 				<div class="mb-3">
 					<label class="form-label" asp-for="RModel.DeliveryAddress">Delivery Address</label>
-					<textarea asp-for="RModel.DeliveryAddress" class="form-control"></textarea>
+					<textarea onblur="validateDeliveryAddress()" asp-for="RModel.DeliveryAddress" class="form-control"></textarea>
 					<span asp-validation-for="RModel.DeliveryAddress" class="text-danger"></span>
 				</div>
+				<p id="delilbl"></p>
 
 				<div class="mb-3">
 					<label class="form-label" asp-for="RModel.Email">Email Address</label>
-					<input type="text" asp-for="RModel.Email" class="form-control" />
+					<input type="text" onblur="validateEmailAddress()" asp-for="RModel.Email" class="form-control" />
 					<span asp-validation-for="RModel.Email" class="text-danger"></span>
 				</div>
+				<p id="emalbl"></p>
 
 				<div id="passwordCheck" class="mb-3">
 					<p id="passwordCheckNote" class="hidden text-danger font-weight-bold font-italic">Password Criteria:</p>
@@ -148,12 +154,85 @@
 		}
 
 	}
-
-
-
-
-
 </script>	
+
+<script type="text/javascript">
+	function validateFullName() {
+		var fullName = document.getElementById('RModel_FullName').value;
+
+		if (!/^[A-Za-z\s]+$/.test(fullName)) {
+			document.getElementById("fnamelbl").innerHTML = "Please enter a VALID Full Name.";
+			document.getElementById("fnamelbl").style.color = "Red";
+			return false;
+		} else {
+			document.getElementById("fnamelbl").innerHTML = "";
+			return true;
+		}
+	}
+</script>
+
+<script type="text/javascript">
+	function validateCreditCardNumber() {
+		var creditCardNumber = document.getElementById('RModel_CreditCardNumber').value;
+
+		if (!/\b(?:\d[-]*?){15,16}\b/.test(creditCardNumber)) {
+			document.getElementById("credlbl").innerHTML = "Please enter a VALID Credit Card Number.";
+			document.getElementById("credlbl").style.color = "Red";
+			return false;
+		} else {
+			document.getElementById("credlbl").innerHTML = "";
+			return true;
+		}
+	}
+</script>
+
+<script type="text/javascript">
+	function validateMobileNumber() {
+		var mobileNumber = document.getElementById('RModel_MobileNumber').value;
+
+		if (!/^\d+$/.test(mobileNumber)) {
+			document.getElementById("mbnlbl").innerHTML = "Please enter a VALID Mobile Number.";
+			document.getElementById("mbnlbl").style.color = "Red";
+			return false;
+		} else {
+			document.getElementById("mbnlbl").innerHTML = "";
+			return true;
+		}
+	}
+</script>
+
+<script type="text/javascript">
+	function validateDeliveryAddress() {
+		var deliveryAddress = document.getElementById('RModel_DeliveryAddress').value;
+
+		if (!/^[A-Za-z0-9\s#-]*$/.test(deliveryAddress)) {
+			document.getElementById("delilbl").innerHTML = "Please enter a VALID Delivery Address.";
+			document.getElementById("delilbl").style.color = "Red";
+			return false;
+		} else {
+			document.getElementById("delilbl").innerHTML = "";
+			return true;
+		}
+	}
+</script>
+
+<script type="text/javascript">
+	function validateEmailAddress() {
+		var emailAddress = document.getElementById('RModel_Email').value;
+
+		if (!/^[a-zA-Z0-9._%+-]+@@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailAddress)) {
+			document.getElementById("emalbl").innerHTML = "Please enter a VALID Email Address.";
+			document.getElementById("emalbl").style.color = "Red";
+			return false;
+		} else {
+			document.getElementById("emalbl").innerHTML = "";
+			return true;
+		}
+	}
+</script>
+
+
+
 
 
 

@@ -9,6 +9,8 @@ using AppSecWebApp.ViewModels;
 using AppSecWebApp.Model;
 using IdentityUser = Microsoft.AspNetCore.Identity.IdentityUser;
 using Microsoft.AspNetCore.Http;
+using System.Net.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace AppSecWebApp.Pages
 {
@@ -17,7 +19,6 @@ namespace AppSecWebApp.Pages
 		[BindProperty]
 		public Login LModel { get; set; }
 
-		public string LoginErrorMessage { get; set; }
 
 		private readonly SignInManager<ApplicationUser> signInManager;
 		private readonly ILogger<LoginModel> _logger;
@@ -34,25 +35,25 @@ namespace AppSecWebApp.Pages
 		{
 		}
 
-		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> OnPostAsync()
 		{
 			if (ModelState.IsValid)
 			{
-				var identityResult = await signInManager.PasswordSignInAsync(LModel.Email, LModel.Password, LModel.RememberMe, false);
+				var identityResult = await signInManager.PasswordSignInAsync(LModel.Email, LModel.Password, LModel.RememberMe, lockoutOnFailure: true);
 				if (identityResult.Succeeded)
 				{
 					var user = await signInManager.UserManager.FindByEmailAsync(LModel.Email);
 					var httpContext = _httpContextAccessor.HttpContext;
 
-					if (user != null)
+                    if (user != null)
 					{
 						// Check if the user is already logged in (UniqueIdentifier is not an empty string)
 						if (!string.IsNullOrEmpty(user.UniqueIdentifier))
 						{
 							ModelState.AddModelError("", "Account already logged in");
-							await signInManager.SignOutAsync(); // Sign out the user to prevent a successful login
-							return Page();
+                            ViewData["ErrorMessage"] = "Login failed. Account is already logged in.";
+                            await signInManager.SignOutAsync(); // Sign out the user to prevent a successful login
+							
 						}
 
 						// Set normal Session variable
@@ -95,8 +96,13 @@ namespace AppSecWebApp.Pages
 						user.UniqueIdentifier = Guid.NewGuid().ToString();
 						await signInManager.UserManager.UpdateAsync(user);
 
-						// Store user-related data in session
-						httpContext.Session.SetString("UserId", user.Id);
+                        // Set LastLogin to the current DateTime
+                        user.LastLogin = DateTime.UtcNow;
+
+                        await signInManager.UserManager.UpdateAsync(user);
+
+                        // Store user-related data in session
+                        httpContext.Session.SetString("UserId", user.Id);
 						httpContext.Session.SetString("UserName", user.UserName);
 						httpContext.Session.SetString("KeepSessionAlive", "true");
 						// Add other user-related data to session as needed
@@ -107,11 +113,22 @@ namespace AppSecWebApp.Pages
 						// Redirect to the absolute path of the Index page
 						return RedirectToPage("/Index");
 					}
-				}
-				ModelState.AddModelError("", "Username or Password incorrect");
-			}
-			return Page();
-		}
+                }
+                else if (identityResult.IsLockedOut)
+                {
+                    _logger.LogInformation("Account locked out");
+                    ModelState.AddModelError("", "Account locked out due to multiple failed login attempts. Please try again later.");
+                    ViewData["ErrorMessage"] = "Login failed. Account is Locked Out, Please try again later.";
+                }
+                else
+                {
+                    _logger.LogInformation("Failed login attempt");
+                    ModelState.AddModelError("", "Username or Password incorrect");
+                    ViewData["ErrorMessage"] = "Login failed.";
+                }
+            }
+            return Page();
+        }
 
 	}
 }

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
+using System.Text.Encodings.Web;
 
 namespace AppSecWebApp.Pages
 {
@@ -33,9 +34,8 @@ namespace AppSecWebApp.Pages
 			var protecting = dataProtectionProvider.CreateProtector("Key");
 			CurrentUser = await _userManager.GetUserAsync(User);
 			var httpContext = _httpContextAccessor.HttpContext;
-			
 
-			if (!User.Identity.IsAuthenticated)
+            if (!User.Identity.IsAuthenticated)
 			{
 				Response.Redirect("/Login");
 				await signInManager.SignOutAsync();
@@ -78,13 +78,14 @@ namespace AppSecWebApp.Pages
 				return;
 			}
 
-			CurrentUser.FullName = protecting.Unprotect(CurrentUser?.FullName) ?? string.Empty;
-			CurrentUser.CreditCardNumber = protecting.Unprotect(CurrentUser?.CreditCardNumber) ?? string.Empty;
-			CurrentUser.Gender = protecting.Unprotect(CurrentUser?.Gender) ?? string.Empty;
-			CurrentUser.MobileNumber = protecting.Unprotect(CurrentUser?.MobileNumber) ?? string.Empty;
-			CurrentUser.DeliveryAddress = protecting.Unprotect(CurrentUser?.DeliveryAddress) ?? string.Empty;
-			CurrentUser.AboutMe = protecting.Unprotect(CurrentUser?.AboutMe) ?? string.Empty;
-			CurrentUser.PhotoPath = protecting.Unprotect(CurrentUser.PhotoPath) ?? string.Empty;
+			// HTML encode the unprotected user information
+			CurrentUser.FullName = HtmlEncoder.Default.Encode(protecting.Unprotect(CurrentUser?.FullName) ?? string.Empty);
+			CurrentUser.CreditCardNumber = HtmlEncoder.Default.Encode(protecting.Unprotect(CurrentUser?.CreditCardNumber) ?? string.Empty);
+			CurrentUser.Gender = HtmlEncoder.Default.Encode(protecting.Unprotect(CurrentUser?.Gender) ?? string.Empty);
+			CurrentUser.MobileNumber = HtmlEncoder.Default.Encode(protecting.Unprotect(CurrentUser?.MobileNumber) ?? string.Empty);
+			CurrentUser.DeliveryAddress = HtmlEncoder.Default.Encode(protecting.Unprotect(CurrentUser?.DeliveryAddress) ?? string.Empty);
+			CurrentUser.AboutMe = HtmlEncoder.Default.Encode(protecting.Unprotect(CurrentUser?.AboutMe) ?? string.Empty);
+			CurrentUser.PhotoPath = HtmlEncoder.Default.Encode(protecting.Unprotect(CurrentUser.PhotoPath) ?? string.Empty);
 
 			// Log the session ID
 			var sessionId = httpContext.Session.Id;

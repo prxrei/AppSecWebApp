@@ -14,5 +14,7 @@ namespace AppSecWebApp.Model
 
 		// Add the UniqueIdentifier property
 		public string UniqueIdentifier { get; set; }
+
+		public DateTime? LastLogin { get; set; }
 	}
 }
