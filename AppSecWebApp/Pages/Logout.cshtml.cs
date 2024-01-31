@@ -22,6 +22,7 @@ namespace AppSecWebApp.Pages
         { 
         }
 
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> OnPostLogoutAsync()
         {
             // Retrieve user ID from the session
@@ -31,12 +32,16 @@ namespace AppSecWebApp.Pages
             HttpContext.Session.Remove("UserId");
             HttpContext.Session.Remove("UserName");
             HttpContext.Session.Remove("SessionIdentifier");
+            HttpContext.Session.Remove("AuthToken");
 
             // Sign out the user
             await signInManager.SignOutAsync();
 
             // Remove the AuthToken cookie
             Response.Cookies.Delete("AuthToken");
+            Response.Cookies.Delete("SessionIdentifierCookie");
+
+            //Remove the SessionIdentifier Cookie
 
             return RedirectToPage("Login");
         }

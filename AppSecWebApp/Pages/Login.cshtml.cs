@@ -35,7 +35,8 @@ namespace AppSecWebApp.Pages
 		{
 		}
 
-		public async Task<IActionResult> OnPostAsync()
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> OnPostAsync()
 		{
 			if (ModelState.IsValid)
 			{
@@ -78,7 +79,8 @@ namespace AppSecWebApp.Pages
 						// Store the session identifier in a secure cookie
 						httpContext.Response.Cookies.Append("SessionIdentifierCookie", sessionIdentifier, new CookieOptions
 						{
-							HttpOnly = true,
+                            Expires = DateTime.Now.AddHours(1),
+                            HttpOnly = true,
 							SameSite = SameSiteMode.Strict,
 							// Set other cookie options as needed
 						});

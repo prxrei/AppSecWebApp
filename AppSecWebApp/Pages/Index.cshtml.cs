@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Mvc;
 
 namespace AppSecWebApp.Pages
 {
@@ -28,7 +29,8 @@ namespace AppSecWebApp.Pages
 
 		public ApplicationUser CurrentUser { get; set; }
 
-		public async Task OnGetAsync()
+        [ValidateAntiForgeryToken]
+        public async Task OnGetAsync()
 		{
 			var dataProtectionProvider = DataProtectionProvider.Create("Encrypt");
 			var protecting = dataProtectionProvider.CreateProtector("Key");
@@ -37,7 +39,13 @@ namespace AppSecWebApp.Pages
 
             if (!User.Identity.IsAuthenticated)
 			{
+                HttpContext.Session.Remove("UserId");
+                HttpContext.Session.Remove("UserName");
+                HttpContext.Session.Remove("SessionIdentifier");
+                HttpContext.Session.Remove("AuthToken");
                 await signInManager.SignOutAsync();
+                Response.Cookies.Delete("AuthToken");
+                Response.Cookies.Delete("SessionIdentifierCookie");
                 Response.Redirect("/Login");
 				return;
 			}
@@ -47,9 +55,15 @@ namespace AppSecWebApp.Pages
 				httpContext.Session.GetString("UserName") == null ||
 				httpContext.Session.GetString("KeepSessionAlive") == null)
 			{
+                HttpContext.Session.Remove("UserId");
+                HttpContext.Session.Remove("UserName");
+                HttpContext.Session.Remove("SessionIdentifier");
+                HttpContext.Session.Remove("AuthToken");
                 await signInManager.SignOutAsync();
-                Response.Redirect("/Login"); 
-				return;
+                Response.Cookies.Delete("AuthToken");
+                Response.Cookies.Delete("SessionIdentifierCookie");
+                Response.Redirect("/Login");
+                return;
 			}
 
 			// Check for AuthToken in session and cookie
@@ -58,7 +72,13 @@ namespace AppSecWebApp.Pages
 
 			if (sessionAuthToken == null || cookieAuthToken == null || sessionAuthToken != cookieAuthToken)
 			{
+                HttpContext.Session.Remove("UserId");
+                HttpContext.Session.Remove("UserName");
+                HttpContext.Session.Remove("SessionIdentifier");
+                HttpContext.Session.Remove("AuthToken");
                 await signInManager.SignOutAsync();
+                Response.Cookies.Delete("AuthToken");
+                Response.Cookies.Delete("SessionIdentifierCookie");
                 Response.Redirect("/Login");
 				return;
 			}
@@ -69,7 +89,13 @@ namespace AppSecWebApp.Pages
 
 			if (storedSessionIdentifier != cookieSessionIdentifier)
 			{
+                HttpContext.Session.Remove("UserId");
+                HttpContext.Session.Remove("UserName");
+                HttpContext.Session.Remove("SessionIdentifier");
+                HttpContext.Session.Remove("AuthToken");
                 await signInManager.SignOutAsync();
+                Response.Cookies.Delete("AuthToken");
+                Response.Cookies.Delete("SessionIdentifierCookie");
                 Response.Redirect("/Login");
 				return;
 			}
