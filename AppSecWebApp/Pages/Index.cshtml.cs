@@ -37,9 +37,8 @@ namespace AppSecWebApp.Pages
 
             if (!User.Identity.IsAuthenticated)
 			{
-				Response.Redirect("/Login");
-				await signInManager.SignOutAsync();
-				CurrentUser.UniqueIdentifier = "";
+                await signInManager.SignOutAsync();
+                Response.Redirect("/Login");
 				return;
 			}
 
@@ -48,9 +47,8 @@ namespace AppSecWebApp.Pages
 				httpContext.Session.GetString("UserName") == null ||
 				httpContext.Session.GetString("KeepSessionAlive") == null)
 			{
-				Response.Redirect("/Login"); // Redirect to the login page if session variables are not set
-				await signInManager.SignOutAsync();
-				CurrentUser.UniqueIdentifier = "";
+                await signInManager.SignOutAsync();
+                Response.Redirect("/Login"); 
 				return;
 			}
 
@@ -60,9 +58,8 @@ namespace AppSecWebApp.Pages
 
 			if (sessionAuthToken == null || cookieAuthToken == null || sessionAuthToken != cookieAuthToken)
 			{
-				Response.Redirect("/Login");
-				await signInManager.SignOutAsync();
-				CurrentUser.UniqueIdentifier = "";
+                await signInManager.SignOutAsync();
+                Response.Redirect("/Login");
 				return;
 			}
 
@@ -72,9 +69,8 @@ namespace AppSecWebApp.Pages
 
 			if (storedSessionIdentifier != cookieSessionIdentifier)
 			{
-				Response.Redirect("/Login");
-				await signInManager.SignOutAsync();
-				CurrentUser.UniqueIdentifier = "";
+                await signInManager.SignOutAsync();
+                Response.Redirect("/Login");
 				return;
 			}
 
@@ -95,10 +91,6 @@ namespace AppSecWebApp.Pages
 			httpContext.Session.GetString("UserId");
 			httpContext.Session.GetString("UserName");
 			httpContext.Session.GetString("KeepSessionAlive");
-
-			// Access the UniqueIdentifier property
-			string uniqueIdentifier = CurrentUser?.UniqueIdentifier ?? string.Empty;
-			_logger.LogInformation($"UniqueIdentifier: {uniqueIdentifier}");
 		}
 
 		public string DisplayImage()

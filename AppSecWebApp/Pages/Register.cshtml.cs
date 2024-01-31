@@ -59,7 +59,6 @@ namespace AppSecWebApp.Pages
 					MobileNumber = HtmlEncoder.Default.Encode(protecting.Protect(RModel.MobileNumber)),
 					DeliveryAddress = HtmlEncoder.Default.Encode(protecting.Protect(RModel.DeliveryAddress)),
 					AboutMe = HtmlEncoder.Default.Encode(protecting.Protect(RModel.AboutMe)),
-					UniqueIdentifier = ""
 				};
 
 

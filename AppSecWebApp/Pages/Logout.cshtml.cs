@@ -32,17 +32,6 @@ namespace AppSecWebApp.Pages
             HttpContext.Session.Remove("UserName");
             HttpContext.Session.Remove("SessionIdentifier");
 
-            // Remove the user's unique identifier from the database
-            if (!string.IsNullOrEmpty(userId))
-            {
-                var user = await userManager.FindByIdAsync(userId);
-                if (user != null)
-                {
-                    user.UniqueIdentifier = "";
-                    await userManager.UpdateAsync(user);
-                }
-            }
-
             // Sign out the user
             await signInManager.SignOutAsync();
 

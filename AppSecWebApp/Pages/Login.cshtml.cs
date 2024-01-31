@@ -47,15 +47,6 @@ namespace AppSecWebApp.Pages
 
                     if (user != null)
 					{
-						// Check if the user is already logged in (UniqueIdentifier is not an empty string)
-						if (!string.IsNullOrEmpty(user.UniqueIdentifier))
-						{
-							ModelState.AddModelError("", "Account already logged in");
-                            ViewData["ErrorMessage"] = "Login failed. Account is already logged in.";
-                            await signInManager.SignOutAsync(); // Sign out the user to prevent a successful login
-							
-						}
-
 						// Set normal Session variable
 						httpContext.Session.SetString("LoginSs", LModel.Email.Trim());
 						var sessionId = httpContext.Session.Id;
@@ -91,10 +82,6 @@ namespace AppSecWebApp.Pages
 							SameSite = SameSiteMode.Strict,
 							// Set other cookie options as needed
 						});
-
-						// Update UniqueIdentifier in the user entity
-						user.UniqueIdentifier = Guid.NewGuid().ToString();
-						await signInManager.UserManager.UpdateAsync(user);
 
                         // Set LastLogin to the current DateTime
                         user.LastLogin = DateTime.UtcNow;
