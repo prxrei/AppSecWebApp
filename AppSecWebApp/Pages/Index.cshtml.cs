@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 namespace AppSecWebApp.Pages
 {
@@ -18,16 +19,19 @@ namespace AppSecWebApp.Pages
 		private readonly SignInManager<ApplicationUser> signInManager;
 		private readonly UserManager<ApplicationUser> _userManager;
 		private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IConfiguration _configuration;
 
-		public IndexModel(ILogger<IndexModel> logger, SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager, IHttpContextAccessor httpContextAccessor)
+        public IndexModel(ILogger<IndexModel> logger, SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager, IHttpContextAccessor httpContextAccessor, IConfiguration configuration)
 		{
 			_logger = logger;
 			_userManager = userManager;
 			this.signInManager = signInManager;
 			_httpContextAccessor = httpContextAccessor;
-		}
+            _configuration = configuration;
+        }
 
 		public ApplicationUser CurrentUser { get; set; }
+        public int sessionTimeout { get; private set; }
 
         [ValidateAntiForgeryToken]
         public async Task OnGetAsync()
@@ -36,6 +40,8 @@ namespace AppSecWebApp.Pages
 			var protecting = dataProtectionProvider.CreateProtector("Key");
 			CurrentUser = await _userManager.GetUserAsync(User);
 			var httpContext = _httpContextAccessor.HttpContext;
+            sessionTimeout = _configuration.GetValue<int>("Session:IdleTimeoutInSeconds");
+			_logger.LogInformation($"sessionTimeout: {sessionTimeout}");
 
             if (!User.Identity.IsAuthenticated)
 			{

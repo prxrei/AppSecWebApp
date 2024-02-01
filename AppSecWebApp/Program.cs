@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using AppSecWebApp.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Mvc.Razor;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,7 +17,6 @@ builder.Services.AddDbContext<AuthDbContext>(options =>
 
 });
 
-
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.Lockout.AllowedForNewUsers = true;
@@ -30,7 +30,7 @@ builder.Services.AddSingleton<ApplicationUser, ApplicationUser>();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromSeconds(60);
+    options.IdleTimeout = TimeSpan.FromSeconds(20);
 });
 
 builder.Services.ConfigureApplicationCookie(config =>

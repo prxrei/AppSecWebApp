@@ -48,59 +48,63 @@ namespace AppSecWebApp.Pages
 
                     if (user != null)
 					{
-						// Set normal Session variable
-						httpContext.Session.SetString("LoginSs", LModel.Email.Trim());
-						var sessionId = httpContext.Session.Id;
-						_logger.LogInformation($"Session ID: {sessionId}");
-
-						// Generate a GUID for AuthToken
-						string authToken = Guid.NewGuid().ToString();
-						_logger.LogInformation($"authtoken: {authToken}");
-
-						// Save AuthToken in Session
-						httpContext.Session.SetString("AuthToken", authToken);
-						_logger.LogInformation($"authtokenset: {httpContext.Session.GetString("AuthToken")}");
-
-						// Save AuthToken in a cookie
-						httpContext.Response.Cookies.Append("AuthToken", authToken, new CookieOptions
+						if (httpContext.Session.GetString("UserId") == null)
 						{
-							Expires = DateTime.Now.AddHours(1), // Set expiration time as needed
-							HttpOnly = true, // Helps prevent XSS attacks
-							SameSite = SameSiteMode.Strict // Adjust as needed
-						});
-						_logger.LogInformation($"authtokensetcookie: {httpContext.Response.Cookies}");
 
-						// Generate a unique session identifier (you may use a GUID, for example)
-						string sessionIdentifier = Guid.NewGuid().ToString();
+							// Set normal Session variable
+							httpContext.Session.SetString("LoginSs", LModel.Email.Trim());
+							var sessionId = httpContext.Session.Id;
+							_logger.LogInformation($"Session ID: {sessionId}");
 
-						// Store the session identifier in the user's session
-						httpContext.Session.SetString("SessionIdentifier", sessionIdentifier);
+							// Generate a GUID for AuthToken
+							string authToken = Guid.NewGuid().ToString();
+							_logger.LogInformation($"authtoken: {authToken}");
 
-						// Store the session identifier in a secure cookie
-						httpContext.Response.Cookies.Append("SessionIdentifierCookie", sessionIdentifier, new CookieOptions
-						{
-                            Expires = DateTime.Now.AddHours(1),
-                            HttpOnly = true,
-							SameSite = SameSiteMode.Strict,
-							// Set other cookie options as needed
-						});
+							// Save AuthToken in Session
+							httpContext.Session.SetString("AuthToken", authToken);
+							_logger.LogInformation($"authtokenset: {httpContext.Session.GetString("AuthToken")}");
 
-                        // Set LastLogin to the current DateTime
-                        user.LastLogin = DateTime.UtcNow;
+							// Save AuthToken in a cookie
+							httpContext.Response.Cookies.Append("AuthToken", authToken, new CookieOptions
+							{
+								Expires = DateTime.Now.AddHours(1), // Set expiration time as needed
+								HttpOnly = true, // Helps prevent XSS attacks
+								SameSite = SameSiteMode.Strict // Adjust as needed
+							});
+							_logger.LogInformation($"authtokensetcookie: {httpContext.Response.Cookies}");
 
-                        await signInManager.UserManager.UpdateAsync(user);
+							// Generate a unique session identifier (you may use a GUID, for example)
+							string sessionIdentifier = Guid.NewGuid().ToString();
 
-                        // Store user-related data in session
-                        httpContext.Session.SetString("UserId", user.Id);
-						httpContext.Session.SetString("UserName", user.UserName);
-						httpContext.Session.SetString("KeepSessionAlive", "true");
-						// Add other user-related data to session as needed
+							// Store the session identifier in the user's session
+							httpContext.Session.SetString("SessionIdentifier", sessionIdentifier);
 
-						_logger.LogInformation($"UserId: {httpContext.Session.GetString("UserId")}");
-						_logger.LogInformation($"UserName: {httpContext.Session.GetString("UserName")}");
+							// Store the session identifier in a secure cookie
+							httpContext.Response.Cookies.Append("SessionIdentifierCookie", sessionIdentifier, new CookieOptions
+							{
+								Expires = DateTime.Now.AddHours(1),
+								HttpOnly = true,
+								SameSite = SameSiteMode.Strict,
+								// Set other cookie options as needed
+							});
 
-						// Redirect to the absolute path of the Index page
-						return RedirectToPage("/Index");
+							// Set LastLogin to the current DateTime
+							user.LastLogin = DateTime.UtcNow;
+
+							await signInManager.UserManager.UpdateAsync(user);
+
+							// Store user-related data in session
+							httpContext.Session.SetString("UserId", user.Id);
+							httpContext.Session.SetString("UserName", user.UserName);
+							httpContext.Session.SetString("KeepSessionAlive", "true");
+							// Add other user-related data to session as needed
+
+							_logger.LogInformation($"UserId: {httpContext.Session.GetString("UserId")}");
+							_logger.LogInformation($"UserName: {httpContext.Session.GetString("UserName")}");
+
+							// Redirect to the absolute path of the Index page
+							return RedirectToPage("/Index");
+						}
 					}
                 }
                 else if (identityResult.IsLockedOut)
