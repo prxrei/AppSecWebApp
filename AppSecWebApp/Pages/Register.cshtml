@@ -170,7 +170,7 @@
 		var fullName = document.getElementById('RModel_FullName').value;
 
 		if (!/^[A-Za-z\s]+$/.test(fullName)) {
-			document.getElementById("fnamelbl").innerHTML = "Please enter a VALID Full Name.";
+			document.getElementById("fnamelbl").innerHTML = "Please enter a VALID Full Name. Invalid Characters Detected";
 			document.getElementById("fnamelbl").style.color = "Red";
 			return false;
 		} else {
@@ -185,7 +185,7 @@
 		var creditCardNumber = document.getElementById('RModel_CreditCardNumber').value;
 
 		if (!/\b(?:\d[-]*?){15,16}\b/.test(creditCardNumber)) {
-			document.getElementById("credlbl").innerHTML = "Please enter a VALID Credit Card Number.";
+			document.getElementById("credlbl").innerHTML = "Please enter a VALID Credit Card Number. Invalid Characters Detected";
 			document.getElementById("credlbl").style.color = "Red";
 			return false;
 		} else {
@@ -200,7 +200,7 @@
 		var mobileNumber = document.getElementById('RModel_MobileNumber').value;
 
 		if (!/^\d+$/.test(mobileNumber)) {
-			document.getElementById("mbnlbl").innerHTML = "Please enter a VALID Mobile Number.";
+			document.getElementById("mbnlbl").innerHTML = "Please enter a VALID Mobile Number. Invalid Characters Detected, Country Code does not need (+) sign";
 			document.getElementById("mbnlbl").style.color = "Red";
 			return false;
 		} else {
@@ -215,7 +215,7 @@
 		var deliveryAddress = document.getElementById('RModel_DeliveryAddress').value;
 
 		if (!/^[A-Za-z0-9\s#-]*$/.test(deliveryAddress)) {
-			document.getElementById("delilbl").innerHTML = "Please enter a VALID Delivery Address.";
+			document.getElementById("delilbl").innerHTML = "Please enter a VALID Delivery Address. Invalid Characters Detected";
 			document.getElementById("delilbl").style.color = "Red";
 			return false;
 		} else {
@@ -230,7 +230,7 @@
 		var emailAddress = document.getElementById('RModel_Email').value;
 
 		if (!/^[a-zA-Z0-9._%+-]+@@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailAddress)) {
-			document.getElementById("emalbl").innerHTML = "Please enter a VALID Email Address.";
+			document.getElementById("emalbl").innerHTML = "Please enter a VALID Email Address. Invalid Characters Detected";
 			document.getElementById("emalbl").style.color = "Red";
 			return false;
 		} else {
