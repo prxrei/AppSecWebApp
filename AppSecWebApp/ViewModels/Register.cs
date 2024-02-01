@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Text.RegularExpressions;
 
 namespace AppSecWebApp.ViewModels
 {
@@ -43,7 +42,8 @@ namespace AppSecWebApp.ViewModels
 
 		[Required]
 		[DataType(DataType.Upload)]
-		public IFormFile? Photo { get; set; }
+        [JPGChecker(ErrorMessage = "Only .jpg files are allowed")]
+        public IFormFile? Photo { get; set; }
 
 		[Required]
 		public string AboutMe { get; set; }
