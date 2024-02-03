@@ -97,8 +97,6 @@ namespace AppSecWebApp.Pages
 
 			var MyPwdHistory = pwdHashes.Any(hash => _userManager.PasswordHasher.VerifyHashedPassword(user, hash, newPassword) != PasswordVerificationResult.Failed);
 
-			_logger.LogInformation($"PwdHistory: {MyPwdHistory}");
-
 			return MyPwdHistory;
 		}
 
