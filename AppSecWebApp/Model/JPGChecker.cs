@@ -3,8 +3,7 @@
 
 public class JPGChecker : ValidationAttribute
 {
-    private readonly string[] _extensions = { ".jpg" };
-
+    private readonly string[] _extensions = {".jpg"};
     protected override ValidationResult IsValid(object test, ValidationContext validationContext)
     {
         if (test == null)
@@ -21,7 +20,6 @@ public class JPGChecker : ValidationAttribute
                 return new ValidationResult(ErrorMsg());
             }
         }
-
         return ValidationResult.Success;
     }
 

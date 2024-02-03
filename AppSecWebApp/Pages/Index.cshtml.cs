@@ -17,7 +17,7 @@ namespace AppSecWebApp.Pages
 	public class IndexModel : PageModel
 	{
 		private readonly ILogger<IndexModel> _logger;
-		private readonly SignInManager<ApplicationUser> signInManager;
+		private readonly SignInManager<ApplicationUser> _signInManager;
 		private readonly UserManager<ApplicationUser> _userManager;
 		private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IConfiguration _configuration;
@@ -26,7 +26,7 @@ namespace AppSecWebApp.Pages
 		{
 			_logger = logger;
 			_userManager = userManager;
-			this.signInManager = signInManager;
+			_signInManager = signInManager;
 			_httpContextAccessor = httpContextAccessor;
             _configuration = configuration;
         }
@@ -46,68 +46,64 @@ namespace AppSecWebApp.Pages
 
 			if (!User.Identity.IsAuthenticated)
 			{
-                HttpContext.Session.Remove("UserId");
-                HttpContext.Session.Remove("UserName");
-                HttpContext.Session.Remove("SessionIdentifier");
-                HttpContext.Session.Remove("AuthToken");
-                await signInManager.SignOutAsync();
+                httpContext.Session.Remove("UserId");
+                httpContext.Session.Remove("UserName");
+                httpContext.Session.Remove("SessionIdentifier");
+                httpContext.Session.Remove("AuthToken");
+                await _signInManager.SignOutAsync();
                 Response.Cookies.Delete("AuthToken");
                 Response.Cookies.Delete("SessionIdentifierCookie");
                 Response.Redirect("/Login");
 				return;
 			}
 
-			// Check for session variables
 			if (httpContext.Session.GetString("UserId") == null ||
 				httpContext.Session.GetString("UserName") == null ||
 				httpContext.Session.GetString("KeepSessionAlive") == null)
 			{
-                HttpContext.Session.Remove("UserId");
-                HttpContext.Session.Remove("UserName");
-                HttpContext.Session.Remove("SessionIdentifier");
-                HttpContext.Session.Remove("AuthToken");
-                await signInManager.SignOutAsync();
+                httpContext.Session.Remove("UserId");
+                httpContext.Session.Remove("UserName");
+                httpContext.Session.Remove("SessionIdentifier");
+                httpContext.Session.Remove("AuthToken");
+                await _signInManager.SignOutAsync();
                 Response.Cookies.Delete("AuthToken");
                 Response.Cookies.Delete("SessionIdentifierCookie");
                 Response.Redirect("/Login");
                 return;
 			}
 
-			// Check for AuthToken in session and cookie
 			var sessionAuthToken = httpContext.Session.GetString("AuthToken");
 			var cookieAuthToken = httpContext.Request.Cookies["AuthToken"];
 
 			if (sessionAuthToken == null || cookieAuthToken == null || sessionAuthToken != cookieAuthToken)
 			{
-                HttpContext.Session.Remove("UserId");
-                HttpContext.Session.Remove("UserName");
-                HttpContext.Session.Remove("SessionIdentifier");
-                HttpContext.Session.Remove("AuthToken");
-                await signInManager.SignOutAsync();
+                httpContext.Session.Remove("UserId");
+                httpContext.Session.Remove("UserName");
+                httpContext.Session.Remove("SessionIdentifier");
+                httpContext.Session.Remove("AuthToken");
+                await _signInManager.SignOutAsync();
                 Response.Cookies.Delete("AuthToken");
                 Response.Cookies.Delete("SessionIdentifierCookie");
                 Response.Redirect("/Login");
 				return;
 			}
 
-			// Check if the stored session identifier in the user's session matches the one in the secure cookie
 			string storedSessionIdentifier = httpContext.Session.GetString("SessionIdentifier");
 			string cookieSessionIdentifier = httpContext.Request.Cookies["SessionIdentifierCookie"];
 
 			if (storedSessionIdentifier != cookieSessionIdentifier)
 			{
-                HttpContext.Session.Remove("UserId");
-                HttpContext.Session.Remove("UserName");
-                HttpContext.Session.Remove("SessionIdentifier");
-                HttpContext.Session.Remove("AuthToken");
-                await signInManager.SignOutAsync();
+                httpContext.Session.Remove("UserId");
+                httpContext.Session.Remove("UserName");
+                httpContext.Session.Remove("SessionIdentifier");
+                httpContext.Session.Remove("AuthToken");
+                await _signInManager.SignOutAsync();
                 Response.Cookies.Delete("AuthToken");
                 Response.Cookies.Delete("SessionIdentifierCookie");
                 Response.Redirect("/Login");
 				return;
 			}
 
-			// HTML encode the unprotected user information
 			CurrentUser.FullName = HtmlEncoder.Default.Encode(protecting.Unprotect(CurrentUser?.FullName) ?? string.Empty);
 			CurrentUser.CreditCardNumber = HtmlEncoder.Default.Encode(protecting.Unprotect(CurrentUser?.CreditCardNumber) ?? string.Empty);
 			CurrentUser.Gender = HtmlEncoder.Default.Encode(protecting.Unprotect(CurrentUser?.Gender) ?? string.Empty);
@@ -116,21 +112,17 @@ namespace AppSecWebApp.Pages
 			CurrentUser.AboutMe = WebUtility.HtmlDecode(protecting.Unprotect(CurrentUser?.AboutMe) ?? string.Empty);
 			CurrentUser.PhotoPath = HtmlEncoder.Default.Encode(protecting.Unprotect(CurrentUser.PhotoPath) ?? string.Empty);
 
-			// Log the session ID
 			var sessionId = httpContext.Session.Id;
 			_logger.LogInformation($"Session ID: {sessionId}");
 
-			// Reset the session timeout by updating session variables
 			httpContext.Session.GetString("UserId");
 			httpContext.Session.GetString("UserName");
 			httpContext.Session.GetString("KeepSessionAlive");
 
             var timeSinceLastPasswordChange = DateTime.UtcNow - CurrentUser.PasswordChangedDate;
 
-            // Check if the user should be redirected to change their password
-            if (timeSinceLastPasswordChange > TimeSpan.FromMinutes(30) && User.Identity.IsAuthenticated)
+            if (timeSinceLastPasswordChange > TimeSpan.FromMinutes(60) && User.Identity.IsAuthenticated)
             {
-                // Redirect to the ChangeThePwd page
                 Response.Redirect("/ChangeThePwd");
                 return;
             }
@@ -142,8 +134,6 @@ namespace AppSecWebApp.Pages
 			{
 				return CurrentUser.PhotoPath;
 			}
-
-			// Default profile image path if the user doesn't have a photo
 			return "/images/default-profile.jpg";
 		}
 	}

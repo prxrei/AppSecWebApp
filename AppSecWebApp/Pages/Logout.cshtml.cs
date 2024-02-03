@@ -9,13 +9,13 @@ namespace AppSecWebApp.Pages
 {
     public class LogoutModel : PageModel
     {
-        private readonly SignInManager<ApplicationUser> signInManager;
-        private readonly UserManager<ApplicationUser> userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public LogoutModel(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
         {
-            this.signInManager = signInManager;
-            this.userManager = userManager;
+            _signInManager = signInManager;
+            _userManager = userManager;
         }
 
         public void OnGet() 
@@ -25,23 +25,17 @@ namespace AppSecWebApp.Pages
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> OnPostLogoutAsync()
         {
-            // Retrieve user ID from the session
             var userId = HttpContext.Session.GetString("UserId");
 
-            // Clear session items
             HttpContext.Session.Remove("UserId");
             HttpContext.Session.Remove("UserName");
             HttpContext.Session.Remove("SessionIdentifier");
             HttpContext.Session.Remove("AuthToken");
 
-            // Sign out the user
-            await signInManager.SignOutAsync();
+            await _signInManager.SignOutAsync();
 
-            // Remove the AuthToken cookie
             Response.Cookies.Delete("AuthToken");
             Response.Cookies.Delete("SessionIdentifierCookie");
-
-            //Remove the SessionIdentifier Cookie
 
             return RedirectToPage("Login");
         }

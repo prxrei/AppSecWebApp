@@ -10,21 +10,21 @@ using System.Text.Encodings.Web;
 
 namespace AppSecWebApp.Pages
 {
-	public class RegisterModel : PageModel
+	public class RegistrationModel : PageModel
 	{
-		private readonly UserManager<ApplicationUser> userManager;
-		private readonly SignInManager<ApplicationUser> signInManager;
+		private readonly UserManager<ApplicationUser> _userManager;
+		private readonly SignInManager<ApplicationUser> _signInManager;
 		private readonly IWebHostEnvironment _environment;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly GoogleV3Captcha _service;
 
         [BindProperty]
-		public Register RModel { get; set; }
+		public Registration RModel { get; set; }
 
-		public RegisterModel(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IWebHostEnvironment environment, IHttpContextAccessor httpContextAccessor, GoogleV3Captcha service)
+		public RegistrationModel(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IWebHostEnvironment environment, IHttpContextAccessor httpContextAccessor, GoogleV3Captcha service)
 		{
-			this.userManager = userManager;
-			this.signInManager = signInManager;
+			_userManager = userManager;
+			_signInManager = signInManager;
 			_environment = environment;
 			_httpContextAccessor = httpContextAccessor;
             _service = service;
@@ -47,15 +47,15 @@ namespace AppSecWebApp.Pages
 			{
 				var dataProtectionProvider = DataProtectionProvider.Create("Encrypt");
 				var protecting = dataProtectionProvider.CreateProtector("Key");
+                var httpContext = _httpContextAccessor.HttpContext;
 
 
-				var emailexist = await userManager.FindByEmailAsync(RModel.Email);
+                var emailexist = await _userManager.FindByEmailAsync(RModel.Email);
 				if (emailexist != null)
 				{
 					ModelState.AddModelError("RModel.EmailAddress", "Email address already registered, please choose another Email Address.");
 					return Page();
 				}
-
 
 				var user = new ApplicationUser()
 				{
@@ -69,7 +69,6 @@ namespace AppSecWebApp.Pages
 					AboutMe = HtmlEncoder.Default.Encode(protecting.Protect(RModel.AboutMe)),
 				};
 
-
 				if (RModel.Photo != null)
 				{
 					var id = Nanoid.Generate(size: 10);
@@ -80,14 +79,13 @@ namespace AppSecWebApp.Pages
 					user.PhotoPath = protecting.Protect($"/Profile/{filename}");
 				}
 
-
-				var result = await userManager.CreateAsync(user, RModel.Password);
+				var result = await _userManager.CreateAsync(user, RModel.Password);
 
 				if (result.Succeeded)
 				{
-                    await signInManager.SignInAsync(user, false);
-                    _httpContextAccessor.HttpContext.Session.SetString("UserId", user.Id);
-                    _httpContextAccessor.HttpContext.Session.SetString("UserName", user.UserName);
+                    await _signInManager.SignInAsync(user, false);
+                    httpContext.Session.SetString("UserId", user.Id);
+                    httpContext.Session.SetString("UserName", user.UserName);
                     return RedirectToPage("Login");
                 }
 

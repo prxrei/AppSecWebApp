@@ -53,7 +53,6 @@ namespace AppSecWebApp.Pages
 
 					var timeSinceLastPasswordChange = DateTime.UtcNow - user.PasswordChangedDate;
 
-					// Check if the user can change the password based on the minimum password age
 					if (timeSinceLastPasswordChange < TimeSpan.FromSeconds(60) && timeSinceLastPasswordChange != null)
 					{
 						ModelState.AddModelError("ChangePwd.NewPassword", "You cannot change your password within 1 minute of the last change.");
@@ -64,10 +63,8 @@ namespace AppSecWebApp.Pages
 
 					if (changePasswordResult.Succeeded)
 					{
-						// Update the last password change timestamp
 						user.PasswordChangedDate = DateTime.UtcNow;
 
-						// Update the password history
 						UpdatePasswordHistory(user, ChangePwd.NewPassword);
 
 						await _userManager.UpdateAsync(user);
@@ -86,13 +83,11 @@ namespace AppSecWebApp.Pages
 					}
 				}
 			}
-			// If ModelState is not valid or if there's an error, redisplay the form
 			return Page();
 		}
 
 		private bool IsPasswordInHistory(ApplicationUser user, string newPassword)
 		{
-			// Split the stored password history into individual hashes
 			var passwordHashes = user.PasswordHashHistory?.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
 
 			if (passwordHashes == null)
@@ -100,13 +95,10 @@ namespace AppSecWebApp.Pages
 				return false;
 			}
 
-			// Hash the new password for comparison
 			var hashedPassword = _userManager.PasswordHasher.HashPassword(user, newPassword);
 
-			// Check if the new hashed password is present in the stored hashes in the database(VerifyHashedPassword also checks through salting)
 			var isPasswordInHistory = passwordHashes.Any(hash => _userManager.PasswordHasher.VerifyHashedPassword(user, hash, newPassword) != PasswordVerificationResult.Failed);
 
-			// Log the result for debugging
 			_logger.LogInformation($"IsPasswordInHistory: {isPasswordInHistory}");
 
 			return isPasswordInHistory;
@@ -116,16 +108,12 @@ namespace AppSecWebApp.Pages
 		{
 			const int maxHistoryCount = 2;
 
-			// Get the current password history
 			var passwordHistory = user.PasswordHashHistory?.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>();
 
-			// Add the new password hash to the history without hashing again
 			passwordHistory.Insert(0, HashPassword(user, newPassword));
 
-			// Trim the history to the maximum allowed count
 			passwordHistory = passwordHistory.Take(maxHistoryCount).ToList();
 
-			// Update the PasswordHashHistory property
 			user.PasswordHashHistory = string.Join(';', passwordHistory);
 		}
 

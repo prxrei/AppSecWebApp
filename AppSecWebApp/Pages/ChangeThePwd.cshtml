@@ -101,9 +101,7 @@
 </script>
 
 <script type="text/javascript">
-	// Function to check if the new password is among the previous passwords
 	function checkPasswordHistory(password) {
-		// Check if the new password is among the previous passwords
 		if (passwordHistory.includes(password)) {
 			document.getElementById("pwdlbl").innerHTML = "You cannot reuse one of your last two passwords.";
 			document.getElementById("pwdlbl").style.color = "Red";
@@ -114,16 +112,13 @@
 		}
 	}
 
-	// Function to check if the user can change the password based on the minimum and maximum password age
 	function checkMinimumMaximumAge(timeSinceLastChange) {
-		// Check if the user can change the password based on the minimum password age
-		if (timeSinceLastChange < 60000) {  // 1 minute in milliseconds
+		if (timeSinceLastChange < 60000) {
 			document.getElementById("pwdlbl").innerHTML = "You cannot change your password within 1 minute of the last change.";
 			document.getElementById("pwdlbl").style.color = "Red";
 			return false;
 		}
 
-		// Check if the password age exceeds the maximum allowed
 		if (timeSinceLastChange > @(TimeSpan.FromMinutes(10).TotalMilliseconds)) {
 			document.getElementById("pwdlbl").innerHTML = "Password must be changed as it has passed the maximum age.";
 			document.getElementById("pwdlbl").style.color = "Red";
@@ -134,19 +129,16 @@
 		return true;
 	}
 
-	// Function to validate the form
 	function validateForm() {
 		var newPassword = document.getElementById('newPassword').value;
 		var confirmPassword = document.getElementById('confirmNewPassword').value;
 
 		var isValid = true;
 
-		// Validate password history
 		if (!checkPasswordHistory(newPassword)) {
 			isValid = false;
 		}
 
-		// Validate minimum and maximum password age
 		var lastPasswordChangeTimestamp = new Date('@Model.PasswordChangedDate.ToUniversalTime().ToString("o")').getTime();
 		var timeSinceLastPasswordChange = Date.now() - lastPasswordChangeTimestamp;
 
@@ -157,9 +149,8 @@
 		return isValid;
 	}
 
-	// Call the function when the page loads
 	window.onload = function () {
-		validateForm(); // Passing 0 as a placeholder for initial load
+		validateForm();
 	};
 </script>
 

@@ -12,9 +12,7 @@ namespace AppSecWebApp.Model
 		public string? PhotoPath { get; set; }
 		public string? AboutMe { get; set; }
 		public DateTime? LastLogin { get; set; }
-
 		public DateTime? PasswordChangedDate { get; set; }
-
 		public string? PasswordHashHistory { get; set; }
 	}
 }

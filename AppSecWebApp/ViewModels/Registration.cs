@@ -2,7 +2,7 @@
 
 namespace AppSecWebApp.ViewModels
 {
-    public class Register
+    public class Registration
     {
 		[Required]
         [RegularExpression(@"^[A-Za-z\s]+$", ErrorMessage = "Full Name does not meet the website's requirements")]

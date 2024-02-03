@@ -33,6 +33,7 @@ namespace AppSecWebApp.Model
                         return false;
                     }
                     _logger.LogInformation($"httpResponse: {httpResponse}");
+
                     var responseStr = await httpResponse.Content.ReadAsStringAsync();
                     _logger.LogInformation($"responseStr: {responseStr}");
 
