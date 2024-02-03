@@ -32,7 +32,7 @@ namespace AppSecWebApp.Pages
         }
 
 		public ApplicationUser CurrentUser { get; set; }
-        public int sessionTimeout { get; private set; }
+        public int sessionTimeout { get; set; }
 
         [ValidateAntiForgeryToken]
         public async Task OnGetAsync()
