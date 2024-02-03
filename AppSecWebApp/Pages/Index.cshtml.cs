@@ -44,16 +44,6 @@ namespace AppSecWebApp.Pages
             sessionTimeout = _configuration.GetValue<int>("Session:IdleTimeoutInSeconds");
 			_logger.LogInformation($"sessionTimeout: {sessionTimeout}");
 
-			var timeSinceLastPasswordChange = DateTime.UtcNow - CurrentUser.PasswordChangedDate;
-
-			// Check if the user should be redirected to change their password
-			if (timeSinceLastPasswordChange > TimeSpan.FromMinutes(30))
-			{
-				// Redirect to the ChangeThePwd page
-				Response.Redirect("/ChangeThePwd");
-				return;
-			}
-
 			if (!User.Identity.IsAuthenticated)
 			{
                 HttpContext.Session.Remove("UserId");
@@ -134,7 +124,17 @@ namespace AppSecWebApp.Pages
 			httpContext.Session.GetString("UserId");
 			httpContext.Session.GetString("UserName");
 			httpContext.Session.GetString("KeepSessionAlive");
-		}
+
+            var timeSinceLastPasswordChange = DateTime.UtcNow - CurrentUser.PasswordChangedDate;
+
+            // Check if the user should be redirected to change their password
+            if (timeSinceLastPasswordChange > TimeSpan.FromMinutes(30) && User.Identity.IsAuthenticated)
+            {
+                // Redirect to the ChangeThePwd page
+                Response.Redirect("/ChangeThePwd");
+                return;
+            }
+        }
 
 		public string DisplayImage()
 		{
