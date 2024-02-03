@@ -67,9 +67,12 @@ namespace AppSecWebApp.Pages
 					MobileNumber = HtmlEncoder.Default.Encode(protecting.Protect(RModel.MobileNumber)),
 					DeliveryAddress = HtmlEncoder.Default.Encode(protecting.Protect(RModel.DeliveryAddress)),
 					AboutMe = HtmlEncoder.Default.Encode(protecting.Protect(RModel.AboutMe)),
-				};
+                    PasswordChangedDate = DateTime.UtcNow,
+                };
+				user.PasswordHashHistory = HashPwd(user, RModel.Password);
 
-				if (RModel.Photo != null)
+
+                if (RModel.Photo != null)
 				{
 					var id = Nanoid.Generate(size: 10);
 					var filename = id + Path.GetExtension(RModel.Photo.FileName);
@@ -97,5 +100,9 @@ namespace AppSecWebApp.Pages
 
 			return Page();
 		}
-	}
+        private string HashPwd(ApplicationUser user, string password)
+        {
+            return _userManager.PasswordHasher.HashPassword(user, password);
+        }
+    }
 }

@@ -45,7 +45,7 @@ namespace AppSecWebApp.Pages
 						return Page();
 					}
 
-					if (IsPasswordInHistory(user, ChangePwd.NewPassword))
+					if (MyPwdHistory(user, ChangePwd.NewPassword))
 					{
 						ModelState.AddModelError("ChangePwd.NewPassword", "You cannot reuse one of your last two passwords.");
 						return Page();
@@ -65,7 +65,7 @@ namespace AppSecWebApp.Pages
 					{
 						user.PasswordChangedDate = DateTime.UtcNow;
 
-						UpdatePasswordHistory(user, ChangePwd.NewPassword);
+						UpdatePwdHistory(user, ChangePwd.NewPassword);
 
 						await _userManager.UpdateAsync(user);
 						await _userManager.UpdateSecurityStampAsync(user); 
@@ -86,38 +86,36 @@ namespace AppSecWebApp.Pages
 			return Page();
 		}
 
-		private bool IsPasswordInHistory(ApplicationUser user, string newPassword)
+		private bool MyPwdHistory(ApplicationUser user, string newPassword)
 		{
-			var passwordHashes = user.PasswordHashHistory?.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+			var pwdHashes = user.PasswordHashHistory?.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
 
-			if (passwordHashes == null)
+			if (pwdHashes == null)
 			{
 				return false;
 			}
 
-			var hashedPassword = _userManager.PasswordHasher.HashPassword(user, newPassword);
+			var MyPwdHistory = pwdHashes.Any(hash => _userManager.PasswordHasher.VerifyHashedPassword(user, hash, newPassword) != PasswordVerificationResult.Failed);
 
-			var isPasswordInHistory = passwordHashes.Any(hash => _userManager.PasswordHasher.VerifyHashedPassword(user, hash, newPassword) != PasswordVerificationResult.Failed);
+			_logger.LogInformation($"PwdHistory: {MyPwdHistory}");
 
-			_logger.LogInformation($"IsPasswordInHistory: {isPasswordInHistory}");
-
-			return isPasswordInHistory;
+			return MyPwdHistory;
 		}
 
-		private void UpdatePasswordHistory(ApplicationUser user, string newPassword)
+		private void UpdatePwdHistory(ApplicationUser user, string newPassword)
 		{
 			const int maxHistoryCount = 2;
 
-			var passwordHistory = user.PasswordHashHistory?.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>();
+			var pwdHistory = user.PasswordHashHistory?.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>();
 
-			passwordHistory.Insert(0, HashPassword(user, newPassword));
+			pwdHistory.Insert(0, HashPwd(user, newPassword));
 
-			passwordHistory = passwordHistory.Take(maxHistoryCount).ToList();
+			pwdHistory = pwdHistory.Take(maxHistoryCount).ToList();
 
-			user.PasswordHashHistory = string.Join(';', passwordHistory);
+			user.PasswordHashHistory = string.Join(';', pwdHistory);
 		}
 
-		private string HashPassword(ApplicationUser user, string password)
+		private string HashPwd(ApplicationUser user, string password)
 		{
 			return _userManager.PasswordHasher.HashPassword(user, password);
 		}
