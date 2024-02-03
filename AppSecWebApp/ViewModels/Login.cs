@@ -11,5 +11,7 @@ namespace AppSecWebApp.ViewModels
         [DataType(DataType.Password)]
         public string Password { get; set; }
         public bool RememberMe { get; set; }
+
+        public string Token { get; set; }
     }
 }

@@ -1,0 +1,167 @@
+﻿@page
+@model ChangeThePwdModel
+@{
+    ViewData["Title"] = "Change Password";
+}
+
+<div class="container mt-5">
+	<div class="row justify-content-center align-items-center">
+		<div class="col-sm-12 col-md-12 col-lg-4">
+
+			<h1 class="display-4">Change Password</h1>
+
+			<form method="post">
+				<div class="mb-3">
+					<label class="form-label" for="currentPassword">Current Password:</label>
+					<input type="password" id="currentPassword" class="form-control" asp-for="ChangePwd.CurrentPassword" required />
+					<span asp-validation-for="ChangePwd.CurrentPassword" class="text-danger"></span>
+				</div>
+
+				<div id="passwordCheck" class="mb-3">
+					<p id="passwordCheckNote" class="hidden text-danger font-weight-bold font-italic">Password Criteria:</p>
+					<p id="lengthCheck" class="hidden text-danger">At least 12 Characters</p>
+					<p id="uppercaseCheck" class="hidden text-danger">At least ONE UPPERCASE letter</p>
+					<p id="lowercaseCheck" class="hidden text-danger">At least ONE lowercase letter</p>
+					<p id="digitCheck" class="hidden text-danger">At least ONE digit</p>
+					<p id="specialCharCheck" class="hidden text-danger">At least ONE Special Character (eg: #$%^&*)</p>
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label" for="newPassword">New Password:</label>
+					<input type="password" id="newPassword" onkeyup="checkpasswordclient()" class="form-control" asp-for="ChangePwd.NewPassword" required />
+					<span asp-validation-for="ChangePwd.NewPassword" class="text-danger"></span>
+				</div>
+				<p id="pwdlbl"></p>
+
+				<div class="mb-3">
+					<label class="form-label" for="confirmNewPassword">Confirm New Password:</label>
+					<input type="password" id="confirmNewPassword" onkeyup="checkPwdMatch()" class="form-control" asp-for="ChangePwd.ConfirmNewPassword" required />
+					<span asp-validation-for="ChangePwd.ConfirmNewPassword" class="text-danger"></span>
+				</div>
+				<p id="cfmpwdlbl"></p>
+
+				<div class="mb-3">
+					<button type="submit" class="btn btn-primary" onclick="validateForm()">Change Password</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+	function checkpasswordclient() {
+		var password = document.getElementById('newPassword').value;
+		var confirmPassword = document.getElementById('confirmNewPassword').value;
+
+		if (password.length < 12) {
+			document.getElementById("pwdlbl").innerHTML = "Password needs to be at least 12 Characters";
+			document.getElementById("pwdlbl").style.color = "Red";
+		}
+
+		else if (!/[A-Z]/.test(password)) {
+			document.getElementById("pwdlbl").innerHTML = "Password needs to have at least ONE Uppercase Letter";
+			document.getElementById("pwdlbl").style.color = "Red";
+		}
+
+		else if (!/[a-z]/.test(password)) {
+			document.getElementById("pwdlbl").innerHTML = "Password needs to have at least ONE Lowercase Letter";
+			document.getElementById("pwdlbl").style.color = "Red";
+		}
+
+		else if (!/\d/.test(password)) {
+			document.getElementById("pwdlbl").innerHTML = "Password needs to have at least ONE Digit";
+			document.getElementById("pwdlbl").style.color = "Red";
+		}
+
+		else if (!/[^a-zA-Z0-9]/.test(password)) {
+			document.getElementById("pwdlbl").innerHTML = "Password needs to have at least ONE Special Character";
+			document.getElementById("pwdlbl").style.color = "Red";
+		}
+		else {
+			document.getElementById("pwdlbl").innerHTML = "";
+		}
+	}
+</script>
+
+<script type="text/javascript">
+	function checkPwdMatch() {
+		var password = document.getElementById('newPassword').value;
+		var confirmPassword = document.getElementById('confirmNewPassword').value;
+
+		if (confirmPassword != password) {
+			document.getElementById("cfmpwdlbl").innerHTML = "Passwords does not match";
+			document.getElementById("cfmpwdlbl").style.color = "Red";
+		}
+
+		else {
+			document.getElementById("cfmpwdlbl").innerHTML = "";
+		}
+
+	}
+</script>
+
+<script type="text/javascript">
+	// Function to check if the new password is among the previous passwords
+	function checkPasswordHistory(password) {
+		// Check if the new password is among the previous passwords
+		if (passwordHistory.includes(password)) {
+			document.getElementById("pwdlbl").innerHTML = "You cannot reuse one of your last two passwords.";
+			document.getElementById("pwdlbl").style.color = "Red";
+			return false;
+		} else {
+			document.getElementById("pwdlbl").innerHTML = "";
+			return true;
+		}
+	}
+
+	// Function to check if the user can change the password based on the minimum and maximum password age
+	function checkMinimumMaximumAge(timeSinceLastChange) {
+		// Check if the user can change the password based on the minimum password age
+		if (timeSinceLastChange < 60000) {  // 1 minute in milliseconds
+			document.getElementById("pwdlbl").innerHTML = "You cannot change your password within 1 minute of the last change.";
+			document.getElementById("pwdlbl").style.color = "Red";
+			return false;
+		}
+
+		// Check if the password age exceeds the maximum allowed
+		if (timeSinceLastChange > @(TimeSpan.FromMinutes(10).TotalMilliseconds)) {
+			document.getElementById("pwdlbl").innerHTML = "Password must be changed as it has passed the maximum age.";
+			document.getElementById("pwdlbl").style.color = "Red";
+			return false;
+		}
+
+		document.getElementById("pwdlbl").innerHTML = "";
+		return true;
+	}
+
+	// Function to validate the form
+	function validateForm() {
+		var newPassword = document.getElementById('newPassword').value;
+		var confirmPassword = document.getElementById('confirmNewPassword').value;
+
+		var isValid = true;
+
+		// Validate password history
+		if (!checkPasswordHistory(newPassword)) {
+			isValid = false;
+		}
+
+		// Validate minimum and maximum password age
+		var lastPasswordChangeTimestamp = new Date('@Model.PasswordChangedDate.ToUniversalTime().ToString("o")').getTime();
+		var timeSinceLastPasswordChange = Date.now() - lastPasswordChangeTimestamp;
+
+		if (!checkMinimumMaximumAge(timeSinceLastPasswordChange)) {
+			isValid = false;
+		}
+
+		return isValid;
+	}
+
+	// Call the function when the page loads
+	window.onload = function () {
+		validateForm(); // Passing 0 as a placeholder for initial load
+	};
+</script>
+
+
+

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using System.Net;
 
 namespace AppSecWebApp.Pages
 {
@@ -43,7 +44,17 @@ namespace AppSecWebApp.Pages
             sessionTimeout = _configuration.GetValue<int>("Session:IdleTimeoutInSeconds");
 			_logger.LogInformation($"sessionTimeout: {sessionTimeout}");
 
-            if (!User.Identity.IsAuthenticated)
+			var timeSinceLastPasswordChange = DateTime.UtcNow - CurrentUser.PasswordChangedDate;
+
+			// Check if the user should be redirected to change their password
+			if (timeSinceLastPasswordChange > TimeSpan.FromMinutes(30))
+			{
+				// Redirect to the ChangeThePwd page
+				Response.Redirect("/ChangeThePwd");
+				return;
+			}
+
+			if (!User.Identity.IsAuthenticated)
 			{
                 HttpContext.Session.Remove("UserId");
                 HttpContext.Session.Remove("UserName");
@@ -112,7 +123,7 @@ namespace AppSecWebApp.Pages
 			CurrentUser.Gender = HtmlEncoder.Default.Encode(protecting.Unprotect(CurrentUser?.Gender) ?? string.Empty);
 			CurrentUser.MobileNumber = HtmlEncoder.Default.Encode(protecting.Unprotect(CurrentUser?.MobileNumber) ?? string.Empty);
 			CurrentUser.DeliveryAddress = HtmlEncoder.Default.Encode(protecting.Unprotect(CurrentUser?.DeliveryAddress) ?? string.Empty);
-			CurrentUser.AboutMe = HtmlEncoder.Default.Encode(protecting.Unprotect(CurrentUser?.AboutMe) ?? string.Empty);
+			CurrentUser.AboutMe = WebUtility.HtmlDecode(protecting.Unprotect(CurrentUser?.AboutMe) ?? string.Empty);
 			CurrentUser.PhotoPath = HtmlEncoder.Default.Encode(protecting.Unprotect(CurrentUser.PhotoPath) ?? string.Empty);
 
 			// Log the session ID

@@ -3,6 +3,12 @@
 @{
 }
 
+@using Microsoft.Extensions.Options
+@using Microsoft.Extensions.Configuration
+@using AppSecWebApp.Model
+@using AppSecWebApp.ViewModels
+@inject IOptions<CaptchaConfiguration> CaptchaConfiguration
+
 @section Navigation
 {
 	<ul class="navbar-nav d-flex justify-content-end flex-grow-1">
@@ -21,6 +27,7 @@
 
 			<form method="post" enctype="multipart/form-data">
 				@Html.AntiForgeryToken()
+				<input type="hidden" id="Registerv3Token" asp-for="RModel.Token" />
 				<div asp-validation-summary="All" class="text-danger"></div>
 
 				<div class="mb-3">
@@ -238,6 +245,26 @@
 			return true;
 		}
 	}
+</script>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://www.google.com/recaptcha/api.js?render=@CaptchaConfiguration.Value.SiteKey"></script>
+<script>
+	function retrieveToken() {
+		grecaptcha.ready(function () {
+			grecaptcha.execute('@CaptchaConfiguration.Value.SiteKey', { action: 'submit' }).then(function (token) {
+				console.log(token);
+				document.getElementById("Registerv3Token").value = token;
+			});
+		});
+	}
+
+	setInterval(retrieveToken, 115000);
+
+	$(function () {
+		retrieveToken();
+	});
+
 </script>
 
 

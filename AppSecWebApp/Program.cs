@@ -9,6 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+builder.Services.Configure<CaptchaConfiguration>(builder.Configuration.GetSection("GoogleReCaptcha"));
+builder.Services.AddTransient(typeof(GoogleV3Captcha));
+
 builder.Services.AddDbContext<AuthDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("AuthConnectionString"));
@@ -23,7 +26,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5); 
     options.Lockout.MaxFailedAccessAttempts = 3; 
 })
-.AddEntityFrameworkStores<AuthDbContext>();
+.AddEntityFrameworkStores<AuthDbContext>()
+.AddDefaultTokenProviders();    
 
 builder.Services.AddDataProtection();
 builder.Services.AddSingleton<ApplicationUser, ApplicationUser>();
@@ -42,8 +46,7 @@ builder.Services.AddAuthentication("Cookie").AddCookie("Cookie", options
     =>
 {
     options.Cookie.Name = "Cookie";
-
-    options.AccessDeniedPath = "/Account/AccessDenied";
+    options.AccessDeniedPath = "/AccessDenied";
 });
 
 var app = builder.Build();

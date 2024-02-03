@@ -16,17 +16,19 @@ namespace AppSecWebApp.Pages
 		private readonly SignInManager<ApplicationUser> signInManager;
 		private readonly IWebHostEnvironment _environment;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly GoogleV3Captcha _service;
 
         [BindProperty]
 		public Register RModel { get; set; }
 
-		public RegisterModel(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IWebHostEnvironment environment, IHttpContextAccessor httpContextAccessor)
+		public RegisterModel(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IWebHostEnvironment environment, IHttpContextAccessor httpContextAccessor, GoogleV3Captcha service)
 		{
 			this.userManager = userManager;
 			this.signInManager = signInManager;
 			_environment = environment;
 			_httpContextAccessor = httpContextAccessor;
-		}
+            _service = service;
+        }
 
 		public void OnGet()
 		{
@@ -35,7 +37,13 @@ namespace AppSecWebApp.Pages
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> OnPostAsync()
 		{
-			if (ModelState.IsValid)
+            var captchaResult = await _service.CheckToken(RModel.Token);
+            if (!captchaResult)
+            {
+                return Page();
+            }
+
+            if (ModelState.IsValid)
 			{
 				var dataProtectionProvider = DataProtectionProvider.Create("Encrypt");
 				var protecting = dataProtectionProvider.CreateProtector("Key");

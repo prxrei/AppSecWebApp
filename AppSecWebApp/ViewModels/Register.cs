@@ -48,7 +48,7 @@ namespace AppSecWebApp.ViewModels
 		[Required]
 		public string AboutMe { get; set; }
 
+        public string Token { get; set; }
 
-
-	}
+    }
 }

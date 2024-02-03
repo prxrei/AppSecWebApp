@@ -1,127 +1,150 @@
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using System;
-using System.Security.Claims;
-using AppSecWebApp.ViewModels;
-using AppSecWebApp.Model;
-using IdentityUser = Microsoft.AspNetCore.Identity.IdentityUser;
-using Microsoft.AspNetCore.Http;
-using System.Net.Http;
-using Microsoft.EntityFrameworkCore;
+	using Microsoft.AspNetCore.Authentication;
+	using Microsoft.AspNetCore.Identity;
+	using Microsoft.AspNetCore.Mvc;
+	using Microsoft.Extensions.Logging;
+	using Microsoft.AspNetCore.Mvc.RazorPages;
+	using System;
+	using System.Security.Claims;
+	using AppSecWebApp.ViewModels;
+	using AppSecWebApp.Model;
+	using IdentityUser = Microsoft.AspNetCore.Identity.IdentityUser;
+	using Microsoft.AspNetCore.Http;
+	using System.Net.Http;
+	using Microsoft.EntityFrameworkCore;
+	using Microsoft.AspNetCore.Authorization;
 
-namespace AppSecWebApp.Pages
-{
-	public class LoginModel : PageModel
+	namespace AppSecWebApp.Pages
 	{
-		[BindProperty]
-		public Login LModel { get; set; }
-
-
-		private readonly SignInManager<ApplicationUser> signInManager;
-		private readonly ILogger<LoginModel> _logger;
-		private readonly IHttpContextAccessor _httpContextAccessor;
-
-		public LoginModel(SignInManager<ApplicationUser> signInManager, ILogger<LoginModel> logger, IHttpContextAccessor httpContextAccessor)
+		[AllowAnonymous]
+		public class LoginModel : PageModel
 		{
-			this.signInManager = signInManager;
-			_logger = logger;
-			_httpContextAccessor = httpContextAccessor;
-		}
+			[BindProperty]
+			public Login LModel { get; set; }
 
-		public void OnGet()
-		{
-		}
+			private readonly SignInManager<ApplicationUser> signInManager;
+			private readonly ILogger<LoginModel> _logger;
+			private readonly IHttpContextAccessor _httpContextAccessor;
+			private readonly GoogleV3Captcha _service;
 
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> OnPostAsync()
-		{
-			if (ModelState.IsValid)
+			public LoginModel(SignInManager<ApplicationUser> signInManager, ILogger<LoginModel> logger, IHttpContextAccessor httpContextAccessor, GoogleV3Captcha service)
 			{
-				var identityResult = await signInManager.PasswordSignInAsync(LModel.Email, LModel.Password, LModel.RememberMe, lockoutOnFailure: true);
-				if (identityResult.Succeeded)
+				this.signInManager = signInManager;
+				_logger = logger;
+				_httpContextAccessor = httpContextAccessor;
+				_service = service;
+			}
+
+			public void OnGet()
+			{
+			}
+
+			[ValidateAntiForgeryToken]
+			public async Task<IActionResult> OnPostAsync()
+			{
+				var captchaResult = await _service.CheckToken(LModel.Token);
+				if (!captchaResult)
 				{
-					var user = await signInManager.UserManager.FindByEmailAsync(LModel.Email);
-					var httpContext = _httpContextAccessor.HttpContext;
+					return Page();
+				}
 
-                    if (user != null)
+				if (ModelState.IsValid)
+				{
+					var identityResult = await signInManager.PasswordSignInAsync(LModel.Email, LModel.Password, LModel.RememberMe, lockoutOnFailure: true);
+					if (identityResult.Succeeded)
 					{
-						if (httpContext.Session.GetString("UserId") == null)
+						var user = await signInManager.UserManager.FindByEmailAsync(LModel.Email);
+						var httpContext = _httpContextAccessor.HttpContext;
+
+						if (user != null)
 						{
-
-							// Set normal Session variable
-							httpContext.Session.SetString("LoginSs", LModel.Email.Trim());
-							var sessionId = httpContext.Session.Id;
-							_logger.LogInformation($"Session ID: {sessionId}");
-
-							// Generate a GUID for AuthToken
-							string authToken = Guid.NewGuid().ToString();
-							_logger.LogInformation($"authtoken: {authToken}");
-
-							// Save AuthToken in Session
-							httpContext.Session.SetString("AuthToken", authToken);
-							_logger.LogInformation($"authtokenset: {httpContext.Session.GetString("AuthToken")}");
-
-							// Save AuthToken in a cookie
-							httpContext.Response.Cookies.Append("AuthToken", authToken, new CookieOptions
+							if (httpContext.Session.GetString("UserId") == null)
 							{
-								Expires = DateTime.Now.AddHours(1), // Set expiration time as needed
-								HttpOnly = true, // Helps prevent XSS attacks
-								SameSite = SameSiteMode.Strict // Adjust as needed
-							});
-							_logger.LogInformation($"authtokensetcookie: {httpContext.Response.Cookies}");
 
-							// Generate a unique session identifier (you may use a GUID, for example)
-							string sessionIdentifier = Guid.NewGuid().ToString();
+								// Set normal Session variable
+								httpContext.Session.SetString("LoginSs", LModel.Email.Trim());
+								var sessionId = httpContext.Session.Id;
+								_logger.LogInformation($"Session ID: {sessionId}");
 
-							// Store the session identifier in the user's session
-							httpContext.Session.SetString("SessionIdentifier", sessionIdentifier);
+								// Generate a GUID for AuthToken
+								string authToken = Guid.NewGuid().ToString();
+								_logger.LogInformation($"authtoken: {authToken}");
 
-							// Store the session identifier in a secure cookie
-							httpContext.Response.Cookies.Append("SessionIdentifierCookie", sessionIdentifier, new CookieOptions
-							{
-								Expires = DateTime.Now.AddHours(1),
-								HttpOnly = true,
-								SameSite = SameSiteMode.Strict,
-								// Set other cookie options as needed
-							});
+								// Save AuthToken in Session
+								httpContext.Session.SetString("AuthToken", authToken);
+								_logger.LogInformation($"authtokenset: {httpContext.Session.GetString("AuthToken")}");
 
-							// Set LastLogin to the current DateTime
-							user.LastLogin = DateTime.UtcNow;
+								// Save AuthToken in a cookie
+								httpContext.Response.Cookies.Append("AuthToken", authToken, new CookieOptions
+								{
+									Expires = DateTime.Now.AddHours(1), // Set expiration time as needed
+									HttpOnly = true, // Helps prevent XSS attacks
+									SameSite = SameSiteMode.Strict // Adjust as needed
+								});
+								_logger.LogInformation($"authtokensetcookie: {httpContext.Response.Cookies}");
 
-							await signInManager.UserManager.UpdateAsync(user);
+								// Generate a unique session identifier (you may use a GUID, for example)
+								string sessionIdentifier = Guid.NewGuid().ToString();
 
-							// Store user-related data in session
-							httpContext.Session.SetString("UserId", user.Id);
-							httpContext.Session.SetString("UserName", user.UserName);
-							httpContext.Session.SetString("KeepSessionAlive", "true");
-							// Add other user-related data to session as needed
+								// Store the session identifier in the user's session
+								httpContext.Session.SetString("SessionIdentifier", sessionIdentifier);
 
-							_logger.LogInformation($"UserId: {httpContext.Session.GetString("UserId")}");
-							_logger.LogInformation($"UserName: {httpContext.Session.GetString("UserName")}");
+								// Store the session identifier in a secure cookie
+								httpContext.Response.Cookies.Append("SessionIdentifierCookie", sessionIdentifier, new CookieOptions
+								{
+									Expires = DateTime.Now.AddHours(1),
+									HttpOnly = true,
+									SameSite = SameSiteMode.Strict,
+									// Set other cookie options as needed
+								});
 
-							// Redirect to the absolute path of the Index page
-							return RedirectToPage("/Index");
+								// Set LastLogin to the current DateTime
+								user.LastLogin = DateTime.UtcNow;
+
+								await signInManager.UserManager.UpdateAsync(user);
+
+								// Store user-related data in session
+								httpContext.Session.SetString("UserId", user.Id);
+								httpContext.Session.SetString("UserName", user.UserName);
+								httpContext.Session.SetString("KeepSessionAlive", "true");
+								// Add other user-related data to session as needed
+
+								_logger.LogInformation($"UserId: {httpContext.Session.GetString("UserId")}");
+								_logger.LogInformation($"UserName: {httpContext.Session.GetString("UserName")}");
+
+								// Add roles to claims
+								var roles = await signInManager.UserManager.GetRolesAsync(user);
+
+								// Create a list of claims
+								var claims = new List<Claim>
+								{
+									new Claim(ClaimTypes.Name, user.Email),
+									new Claim(ClaimTypes.Email, user.Email),
+								};
+
+								// Add roles as separate claims
+								claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+
+								// Redirect to the absolute path of the Index page
+								return RedirectToPage("/Index");
+							}
 						}
 					}
-                }
-                else if (identityResult.IsLockedOut)
-                {
-                    _logger.LogInformation("Account locked out");
-                    ModelState.AddModelError("", "Account locked out due to multiple failed login attempts. Please try again later.");
-                    ViewData["ErrorMessage"] = "Login failed. Account is Locked Out, Please try again later.";
-                }
-                else
-                {
-                    _logger.LogInformation("Failed login attempt");
-                    ModelState.AddModelError("", "Username or Password incorrect");
-                    ViewData["ErrorMessage"] = "Login failed.";
-                }
-            }
-            return Page();
-        }
+					else if (identityResult.IsLockedOut)
+					{
+						_logger.LogInformation("Account locked out");
+						ModelState.AddModelError("", "Account locked out due to multiple failed login attempts. Please try again later.");
+						ViewData["ErrorMessage"] = "Login failed. Account is Locked Out, Please try again later.";
+					}
+					else
+					{
+						_logger.LogInformation("Failed login attempt");
+						ModelState.AddModelError("", "Username or Password incorrect");
+						ViewData["ErrorMessage"] = "Login failed.";
+					}
+				}
 
+				return Page();
+			}
+
+		}
 	}
-}
