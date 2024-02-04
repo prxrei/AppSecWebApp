@@ -6,10 +6,12 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using AppSecWebApp.ViewModels;
 using NanoidDotNet;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace AppSecWebApp.Pages
 {
+	[AllowAnonymous]
 	public class RegistrationModel : PageModel
 	{
 		private readonly UserManager<ApplicationUser> _userManager;

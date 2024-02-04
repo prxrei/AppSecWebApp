@@ -17,11 +17,15 @@ namespace AppSecWebApp.Pages
 	{
 		private readonly ILogger<ChangeThePwdModel> _logger;
 		private readonly UserManager<ApplicationUser> _userManager;
+		private readonly SignInManager<ApplicationUser> _signInManager;
+		private readonly IHttpContextAccessor _httpContextAccessor; 
 
-		public ChangeThePwdModel(ILogger<ChangeThePwdModel> logger, UserManager<ApplicationUser> userManager)
+		public ChangeThePwdModel(ILogger<ChangeThePwdModel> logger, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IHttpContextAccessor httpContextAccessor)
 		{
 			_logger = logger;
 			_userManager = userManager;
+			_signInManager = signInManager;
+			_httpContextAccessor = httpContextAccessor;
 		}
 
 		[BindProperty]
@@ -29,7 +33,71 @@ namespace AppSecWebApp.Pages
 
 		public DateTime PasswordChangedDate { get; set; }
 
-		public async Task<IActionResult> OnPostAsync()
+        public async Task OnGetAsync()
+        {
+            var httpContext = _httpContextAccessor.HttpContext;
+            if (!User.Identity.IsAuthenticated)
+            {
+                httpContext.Session.Remove("UserId");
+                httpContext.Session.Remove("UserName");
+                httpContext.Session.Remove("SessionIdentifier");
+                httpContext.Session.Remove("AuthToken");
+                await _signInManager.SignOutAsync();
+                Response.Cookies.Delete("AuthTokenCookie");
+                Response.Cookies.Delete("SessionIdentifierCookie");
+                Response.Redirect("/Login");
+                return;
+            }
+
+            if (httpContext.Session.GetString("UserId") == null ||
+                httpContext.Session.GetString("UserName") == null ||
+                httpContext.Session.GetString("KeepSessionAlive") == null)
+            {
+                httpContext.Session.Remove("UserId");
+                httpContext.Session.Remove("UserName");
+                httpContext.Session.Remove("SessionIdentifier");
+                httpContext.Session.Remove("AuthToken");
+                await _signInManager.SignOutAsync();
+                Response.Cookies.Delete("AuthTokenCookie");
+                Response.Cookies.Delete("SessionIdentifierCookie");
+                Response.Redirect("/Login");
+                return;
+            }
+
+            var sessionAuthToken = httpContext.Session.GetString("AuthToken");
+            var cookieAuthToken = httpContext.Request.Cookies["AuthTokenCookie"];
+
+            if (sessionAuthToken == null || cookieAuthToken == null || sessionAuthToken != cookieAuthToken)
+            {
+                httpContext.Session.Remove("UserId");
+                httpContext.Session.Remove("UserName");
+                httpContext.Session.Remove("SessionIdentifier");
+                httpContext.Session.Remove("AuthTokenCookie");
+                await _signInManager.SignOutAsync();
+                Response.Cookies.Delete("AuthTokenCookie");
+                Response.Cookies.Delete("SessionIdentifierCookie");
+                Response.Redirect("/Login");
+                return;
+            }
+
+            string storedSessionIdentifier = httpContext.Session.GetString("SessionIdentifier");
+            string cookieSessionIdentifier = httpContext.Request.Cookies["SessionIdentifierCookie"];
+
+            if (storedSessionIdentifier != cookieSessionIdentifier)
+            {
+                httpContext.Session.Remove("UserId");
+                httpContext.Session.Remove("UserName");
+                httpContext.Session.Remove("SessionIdentifier");
+                httpContext.Session.Remove("AuthToken");
+                await _signInManager.SignOutAsync();
+                Response.Cookies.Delete("AuthTokenCookie");
+                Response.Cookies.Delete("SessionIdentifierCookie");
+                Response.Redirect("/Login");
+                return;
+            }
+        }
+
+        public async Task<IActionResult> OnPostAsync()
 		{
 			if (ModelState.IsValid)
 			{
