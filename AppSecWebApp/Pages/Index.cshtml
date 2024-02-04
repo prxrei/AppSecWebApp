@@ -1,7 +1,7 @@
 ﻿@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Home page"; 
 }
 
 @section Navigation
@@ -50,28 +50,8 @@
             <label for="aboutMe" style="font-weight: bold; font-style: italic; color: blue;">About Me:</label>
             <textarea id="aboutMe" readonly class="form-control">@Model.CurrentUser.AboutMe</textarea>
         </div>
-        <input type="hidden" id="sessionTimeout" value="@Model.sessionTimeout" />
+        <input type="hidden" id="sessionTimeout" value="@Model.SessionTimeout" />
     </div>
 </div>
-
-<script>
-    function kickout_to_Login() {
-        window.location.href = '/Login';
-    }
-
-    function startTimeout() {
-        var sessionTimeout = parseInt(document.getElementById('sessionTimeout').value);
-        var timeoutMilliseconds = sessionTimeout * 1000; 
-
-        setTimeout(function () {
-            kickout_to_Login();
-        }, timeoutMilliseconds);
-    }
-
-    window.onload = function () {
-        startTimeout();
-    };
-</script>
-
 
 

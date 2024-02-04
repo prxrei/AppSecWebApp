@@ -44,7 +44,7 @@
 					httpContext.Session.Remove("SessionIdentifier");
 					httpContext.Session.Remove("AuthToken");
 					await _signInManager.SignOutAsync();
-					Response.Cookies.Delete("AuthToken");
+					Response.Cookies.Delete("AuthTokenCookie");
 					Response.Cookies.Delete("SessionIdentifierCookie");
 					return;
 				}
@@ -58,22 +58,22 @@
 					httpContext.Session.Remove("SessionIdentifier");
 					httpContext.Session.Remove("AuthToken");
 					await _signInManager.SignOutAsync();
-					Response.Cookies.Delete("AuthToken");
+					Response.Cookies.Delete("AuthTokenCookie");
 					Response.Cookies.Delete("SessionIdentifierCookie");
 					return;
 				}
 
 				var sessionAuthToken = httpContext.Session.GetString("AuthToken");
-				var cookieAuthToken = httpContext.Request.Cookies["AuthToken"];
+				var cookieAuthToken = httpContext.Request.Cookies["AuthTokenCookie"];
 
 				if (sessionAuthToken == null || cookieAuthToken == null || sessionAuthToken != cookieAuthToken)
 				{
 					httpContext.Session.Remove("UserId");
 					httpContext.Session.Remove("UserName");
 					httpContext.Session.Remove("SessionIdentifier");
-					httpContext.Session.Remove("AuthToken");
+					httpContext.Session.Remove("AuthTokenCookie");
 					await _signInManager.SignOutAsync();
-					Response.Cookies.Delete("AuthToken");
+					Response.Cookies.Delete("AuthTokenCookie");
 					Response.Cookies.Delete("SessionIdentifierCookie");
 					return;
 				}
@@ -88,7 +88,7 @@
 					httpContext.Session.Remove("SessionIdentifier");
 					httpContext.Session.Remove("AuthToken");
 					await _signInManager.SignOutAsync();
-					Response.Cookies.Delete("AuthToken");
+					Response.Cookies.Delete("AuthTokenCookie");
 					Response.Cookies.Delete("SessionIdentifierCookie");
 					return;
 				}
@@ -125,7 +125,7 @@
 								httpContext.Session.SetString("AuthToken", authToken);
 								_logger.LogInformation($"authtokenset: {httpContext.Session.GetString("AuthToken")}");
 
-								httpContext.Response.Cookies.Append("AuthToken", authToken, new CookieOptions
+								httpContext.Response.Cookies.Append("AuthTokenCookie", authToken, new CookieOptions
 								{
 									Expires = DateTime.Now.AddHours(1),
 									HttpOnly = true,

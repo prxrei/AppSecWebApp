@@ -10,6 +10,7 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System.Net;
+using Microsoft.Extensions.Options;
 
 namespace AppSecWebApp.Pages
 {
@@ -32,7 +33,8 @@ namespace AppSecWebApp.Pages
         }
 
 		public ApplicationUser CurrentUser { get; set; }
-        public int sessionTimeout { get; set; }
+
+        public double SessionTimeout { get; private set; }
 
         [ValidateAntiForgeryToken]
         public async Task OnGetAsync()
@@ -41,39 +43,35 @@ namespace AppSecWebApp.Pages
 			var protecting = dataProtectionProvider.CreateProtector("Key");
 			CurrentUser = await _userManager.GetUserAsync(User);
 			var httpContext = _httpContextAccessor.HttpContext;
-            sessionTimeout = _configuration.GetValue<int>("Session:IdleTimeoutInSeconds");
-			_logger.LogInformation($"sessionTimeout: {sessionTimeout}");
 
-			if (!User.Identity.IsAuthenticated)
+            if (!User.Identity.IsAuthenticated)
 			{
                 httpContext.Session.Remove("UserId");
                 httpContext.Session.Remove("UserName");
                 httpContext.Session.Remove("SessionIdentifier");
                 httpContext.Session.Remove("AuthToken");
                 await _signInManager.SignOutAsync();
-                Response.Cookies.Delete("AuthToken");
+                Response.Cookies.Delete("AuthTokenCookie");
                 Response.Cookies.Delete("SessionIdentifierCookie");
                 Response.Redirect("/Login");
 				return;
 			}
 
-			if (httpContext.Session.GetString("UserId") == null ||
-				httpContext.Session.GetString("UserName") == null ||
-				httpContext.Session.GetString("KeepSessionAlive") == null)
+			if (httpContext.Session.GetString("UserId") == null || httpContext.Session.GetString("UserName") == null ||httpContext.Session.GetString("KeepSessionAlive") == null)
 			{
                 httpContext.Session.Remove("UserId");
                 httpContext.Session.Remove("UserName");
                 httpContext.Session.Remove("SessionIdentifier");
                 httpContext.Session.Remove("AuthToken");
                 await _signInManager.SignOutAsync();
-                Response.Cookies.Delete("AuthToken");
+                Response.Cookies.Delete("AuthTokenCookie");
                 Response.Cookies.Delete("SessionIdentifierCookie");
                 Response.Redirect("/Login");
                 return;
 			}
 
 			var sessionAuthToken = httpContext.Session.GetString("AuthToken");
-			var cookieAuthToken = httpContext.Request.Cookies["AuthToken"];
+			var cookieAuthToken = httpContext.Request.Cookies["AuthTokenCookie"];
 
 			if (sessionAuthToken == null || cookieAuthToken == null || sessionAuthToken != cookieAuthToken)
 			{
@@ -82,7 +80,7 @@ namespace AppSecWebApp.Pages
                 httpContext.Session.Remove("SessionIdentifier");
                 httpContext.Session.Remove("AuthToken");
                 await _signInManager.SignOutAsync();
-                Response.Cookies.Delete("AuthToken");
+                Response.Cookies.Delete("AuthTokenCookie");
                 Response.Cookies.Delete("SessionIdentifierCookie");
                 Response.Redirect("/Login");
 				return;
@@ -98,7 +96,7 @@ namespace AppSecWebApp.Pages
                 httpContext.Session.Remove("SessionIdentifier");
                 httpContext.Session.Remove("AuthToken");
                 await _signInManager.SignOutAsync();
-                Response.Cookies.Delete("AuthToken");
+                Response.Cookies.Delete("AuthTokenCookie");
                 Response.Cookies.Delete("SessionIdentifierCookie");
                 Response.Redirect("/Login");
 				return;
@@ -127,7 +125,6 @@ namespace AppSecWebApp.Pages
                 return;
             }
         }
-
 		public string DisplayImage()
 		{
 			if (CurrentUser != null && !string.IsNullOrEmpty(CurrentUser.PhotoPath))
